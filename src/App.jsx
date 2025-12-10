@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="app">
       <AuthContextProvider>
-        <Router basename="/anime-flix">
+        <Router basename="/anime-project">
           <Routes>
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
