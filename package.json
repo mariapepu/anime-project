@@ -11,7 +11,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://mariapepu.github.io/anime-project/",
+  "homepage": "https://mariapepu.github.io/mizu-play/",
   "dependencies": {
     "firebase": "^12.6.0",
     "react": "^19.2.0",
