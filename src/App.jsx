@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthContextProvider } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="app">
       <AuthContextProvider>
-        <Router basename="/anime-project">
+        <Router>
           <Routes>
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
