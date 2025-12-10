@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
+import { animeList } from '../data/anime';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -32,6 +33,32 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const [showSearch, setShowSearch] = useState(false);
+    const [query, setQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+
+    const handleSearch = (e) => {
+        const text = e.target.value;
+        setQuery(text);
+
+        if (text.length > 0) {
+            const filtered = animeList.filter(anime =>
+                anime.title.toLowerCase().includes(text.toLowerCase())
+            );
+            setSearchResults(filtered);
+        } else {
+            setSearchResults([]);
+        }
+    };
+
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        setShowSearch(false);
+        setQuery('');
+        setSearchResults([]);
+        navigate(`/search?q=${query}`);
+    };
+
     return (
         <nav
             style={{
@@ -54,20 +81,76 @@ const Navbar = () => {
                         MizuPlay
                     </h1>
                 </Link>
-                {user?.email ? (
-                    <ul style={{ display: 'flex', gap: '1.5rem', listStyle: 'none', color: '#e5e5e5', fontSize: '0.9rem' }}>
+                {user?.email && (
+                    <ul style={{ display: 'flex', gap: '1.5rem', listStyle: 'none', color: '#e5e5e5', fontSize: '0.9rem' }} className="hidden md:flex">
                         <Link to='/'><li style={{ cursor: 'pointer', fontWeight: 'bold' }}>Home</li></Link>
                         <Link to='/series'><li style={{ cursor: 'pointer' }}>Series</li></Link>
                         <Link to='/movies'><li style={{ cursor: 'pointer' }}>Movies</li></Link>
                         <Link to='/new'><li style={{ cursor: 'pointer' }}>New & Popular</li></Link>
                         <Link to='/mylist'><li style={{ cursor: 'pointer' }}>My List</li></Link>
                     </ul>
-                ) : null}
+                )}
             </div>
 
             {user?.email ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: 'white' }}>
-                    <Search size={20} style={{ cursor: 'pointer' }} />
+
+                    {/* Search Component */}
+                    <div className="relative flex items-center">
+                        <div className={`flex items-center border border-white bg-black/80 transition-all duration-300 ${showSearch ? 'w-[200px] md:w-[250px] p-1' : 'w-0 border-0 bg-transparent overflow-hidden'}`}>
+                            <Search size={20} className="ml-1 min-w-[20px]" />
+                            <form onSubmit={handleSearchSubmit} className="w-full">
+                                <input
+                                    type="text"
+                                    className="bg-transparent border-none text-white focus:outline-none pl-2 text-sm w-full"
+                                    placeholder="Titles, people, genres"
+                                    value={query}
+                                    onChange={handleSearch}
+                                    style={{
+                                        // Force color white to override browser autofill styles
+                                        color: 'white'
+                                    }}
+                                />
+                            </form>
+                            {query && (
+                                <span className="cursor-pointer text-xs px-2" onClick={() => { setQuery(''); setSearchResults([]); }}>X</span>
+                            )}
+                        </div>
+                        {!showSearch && (
+                            <Search size={20} style={{ cursor: 'pointer' }} onClick={() => setShowSearch(true)} />
+                        )}
+
+                        {/* Autocomplete Dropdown */}
+                        {searchResults.length > 0 && showSearch && (
+                            <div className="absolute top-10 right-0 w-[250px] bg-[#141414] border border-[#333] shadow-xl max-h-[300px] overflow-y-auto rounded z-50">
+                                {searchResults.map(result => (
+                                    <div
+                                        key={result.id}
+                                        className="flex items-center gap-3 p-3 hover:bg-[#333] cursor-pointer border-b border-[#222]"
+                                        onClick={() => {
+                                            navigate(`/title/${result.id}`);
+                                            setShowSearch(false);
+                                            setQuery('');
+                                            setSearchResults([]);
+                                        }}
+                                    >
+                                        <img src={result.image} alt={result.title} className="w-10 h-14 object-cover rounded" />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold truncate">{result.title}</p>
+                                            <p className="text-xs text-gray-400">{result.category}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div
+                                    className="p-2 text-center text-xs text-white bg-[#e50914] cursor-pointer hover:bg-red-700 font-bold"
+                                    onClick={(e) => handleSearchSubmit(e)}
+                                >
+                                    View all results for "{query}"
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <Bell size={20} style={{ cursor: 'pointer' }} />
 
                     <div

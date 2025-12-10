@@ -9,6 +9,8 @@ import Series from './pages/Series';
 import Movies from './pages/Movies';
 import NewPopular from './pages/NewPopular';
 import MyList from './pages/MyList';
+import Search from './pages/Search';
+import TitleDetails from './pages/TitleDetails';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -56,6 +58,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MyList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/search'
+              element={
+                <ProtectedRoute>
+                  <Search />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/title/:id'
+              element={
+                <ProtectedRoute>
+                  <TitleDetails />
                 </ProtectedRoute>
               }
             />
