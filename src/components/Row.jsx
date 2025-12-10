@@ -57,7 +57,7 @@ const Row = ({ title, animes, onPlay }) => {
                         overflowX: 'scroll',
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
-                        padding: '1rem 0',
+                        padding: '1rem 1rem',
                         scrollBehavior: 'smooth'
                     }}
                     className="no-scrollbar"
