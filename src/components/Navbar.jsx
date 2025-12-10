@@ -51,7 +51,7 @@ const Navbar = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                 <Link to='/'>
                     <h1 style={{ color: 'var(--primary)', fontSize: '1.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
-                        ANIMEFLIX
+                        MizuPlay
                     </h1>
                 </Link>
                 {user?.email ? (
