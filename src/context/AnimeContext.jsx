@@ -7,6 +7,7 @@ const AnimeContext = createContext();
 export function AnimeContextProvider({ children }) {
     const [animeList, setAnimeList] = useState([]);
     const [trendingList, setTrendingList] = useState([]);
+    const [newReleasesList, setNewReleasesList] = useState([]);
     const [featuredAnime, setFeaturedAnime] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -47,7 +48,28 @@ export function AnimeContextProvider({ children }) {
                 // Limit to top 10 trending
                 setTrendingList(sortedByPopularity.slice(0, 10));
 
-                // 4. Find featured from list or fallback to first
+                // 4. Compute New Releases List (last 7 days, sorted by most recent)
+                const newReleases = list
+                    .filter(a => {
+                        const isRecent = (dateStr) => {
+                            if (!dateStr) return false;
+                            const date = new Date(dateStr);
+                            const now = new Date();
+                            const diffDays = (now - date) / (1000 * 60 * 60 * 24);
+                            return diffDays >= 0 && diffDays <= 7;
+                        };
+                        return isRecent(a.createdAt) || isRecent(a.lastEpisodeAt);
+                    })
+                    .sort((a, b) => {
+                        const dateA = new Date(a.lastEpisodeAt || a.createdAt);
+                        const dateB = new Date(b.lastEpisodeAt || b.createdAt);
+                        return dateB - dateA;
+                    });
+
+                // Export it
+                setNewReleasesList(newReleases);
+
+                // 5. Find featured from list or fallback to first
                 const featuredItem = list.find(item => item.featured === true);
                 setFeaturedAnime(featuredItem || list[0]);
             } catch (error) {
@@ -61,7 +83,7 @@ export function AnimeContextProvider({ children }) {
     }, []);
 
     return (
-        <AnimeContext.Provider value={{ animeList, trendingList, featuredAnime, loading }}>
+        <AnimeContext.Provider value={{ animeList, trendingList, newReleasesList, featuredAnime, loading }}>
             {children}
         </AnimeContext.Provider>
     );

@@ -56,6 +56,7 @@ const Admin = () => {
                 ...animeForm,
                 id: parseInt(animeForm.id),
                 genres: genresArray,
+                createdAt: new Date().toISOString(), // Timestamp for "Nuevo" badge
                 seasons: animeForm.category === 'Series' ? [{ season: 1, episodes: [] }] : null
             };
 
@@ -107,7 +108,10 @@ const Admin = () => {
             // Sort episodes by ID
             seasons[seasonIndex].episodes.sort((a, b) => a.id - b.id);
 
-            await updateDoc(animeRef, { seasons: seasons });
+            await updateDoc(animeRef, {
+                seasons: seasons,
+                lastEpisodeAt: new Date().toISOString() // Timestamp for "Nuevo Epis." badge
+            });
             setMessage('¡Episodio añadido con éxito!');
             setEpisodeForm({ ...episodeForm, episodeId: '', episodeTitle: '', videoUrl: '' });
         } catch (error) {
