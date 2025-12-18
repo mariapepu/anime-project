@@ -82,19 +82,23 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                     style={{
                                         position: 'absolute',
                                         left: '-2.5rem',
-                                        bottom: '31px', // Higher to clear title
+                                        bottom: '14px',
                                         zIndex: 20,
                                         fontSize: '8rem',
                                         fontWeight: '900',
-                                        background: 'linear-gradient(to right, rgba(20, 20, 20, 1) 65%, rgba(20, 20, 20, 0.5) 100%)',
+                                        background: 'linear-gradient(to right, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0.4) 100%)',
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         WebkitTextStroke: '2px #FFB6C1',
+                                        width: 'fit-content',
+                                        height: 'auto',
+                                        padding: '0.2rem 0.5rem', // Extra space for stroke and curves
                                         userSelect: 'none',
                                         pointerEvents: 'none',
-                                        lineHeight: '0.8',
+                                        lineHeight: '1', // Increased to prevent vertical clipping
                                         fontFamily: 'system-ui, sans-serif',
-                                        transition: 'all 0.3s ease'
+                                        transition: 'all 0.3s ease',
+                                        overflow: 'visible'
                                     }}
                                 >
                                     {index + 1}
