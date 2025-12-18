@@ -216,6 +216,11 @@ const Navbar = () => {
                                 <Link to='/account' style={{ fontSize: '0.9rem', color: '#fff', textDecoration: 'none' }}>
                                     See Profile
                                 </Link>
+                                {user?.email === 'mperezpulles@gmail.com' && (
+                                    <Link to='/admin' style={{ fontSize: '0.9rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>
+                                        Admin Panel
+                                    </Link>
+                                )}
                                 <div style={{ height: '1px', backgroundColor: '#333' }}></div>
                                 <button
                                     onClick={handleLogout}

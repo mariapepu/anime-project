@@ -12,6 +12,7 @@ import NewPopular from './pages/NewPopular';
 import MyList from './pages/MyList';
 import Search from './pages/Search';
 import TitleDetails from './pages/TitleDetails';
+import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -84,6 +85,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Account />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path='/admin'
+                element={
+                  <ProtectedRoute>
+                    <Admin />
                   </ProtectedRoute>
                 }
               />
