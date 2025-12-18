@@ -55,11 +55,11 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                     ref={rowRef}
                     style={{
                         display: 'flex',
-                        gap: showRank ? '3rem' : '0.5rem', // Extra gap for numbers to prevent overlap mess
+                        gap: showRank ? '3.5rem' : '0.5rem',
                         overflowX: 'scroll',
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
-                        padding: '1rem 1rem',
+                        padding: showRank ? '1rem 4rem' : '1rem 1rem', // Responsive padding for numbers
                         scrollBehavior: 'smooth'
                     }}
                     className="no-scrollbar"
@@ -77,20 +77,24 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                             }}
                         >
                             {showRank && (
-                                <div style={{
-                                    position: 'absolute',
-                                    left: '-1.5rem', // Slight overlap
-                                    bottom: '5px',
-                                    zIndex: 20,
-                                    fontSize: '8rem',
-                                    fontWeight: '900',
-                                    color: 'rgba(20, 20, 20, 0.7)', // Semi-transparent dark gray for contrast
-                                    WebkitTextStroke: '2px #FFB6C1', // Brand pink outline
-                                    userSelect: 'none',
-                                    pointerEvents: 'none',
-                                    lineHeight: '0.8',
-                                    fontFamily: 'system-ui, sans-serif'
-                                }}>
+                                <div
+                                    className="rank-number"
+                                    style={{
+                                        position: 'absolute',
+                                        left: '-2.5rem',
+                                        bottom: '30px', // Higher to clear title
+                                        zIndex: 20,
+                                        fontSize: '8rem',
+                                        fontWeight: '900',
+                                        color: 'rgba(20, 20, 20, 0.7)',
+                                        WebkitTextStroke: '2px #FFB6C1',
+                                        userSelect: 'none',
+                                        pointerEvents: 'none',
+                                        lineHeight: '0.8',
+                                        fontFamily: 'system-ui, sans-serif',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
                                     {index + 1}
                                 </div>
                             )}
@@ -111,7 +115,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                 color: '#999',
                                 fontSize: '0.9rem',
                                 fontWeight: '500',
-                                paddingLeft: showRank ? '2rem' : '0' // Adjust text to not be hidden by number if needed
+                                paddingLeft: '0.5rem' // Standard slight padding
                             }}>
                                 {anime.title}
                             </p>
