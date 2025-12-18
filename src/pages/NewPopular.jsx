@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Row from '../components/Row';
 import Player from '../components/Player';
-import { animeList } from '../data/anime';
+import { useAnime } from '../context/AnimeContext';
 
 const NewPopular = () => {
     const [playingAnime, setPlayingAnime] = useState(null);
+    const { animeList, loading } = useAnime();
+
+    if (loading) return <div className="text-white pt-20 pl-[4%]">Loading...</div>;
+
     const newReleases = animeList.filter(anime => anime.isNew);
 
     return (

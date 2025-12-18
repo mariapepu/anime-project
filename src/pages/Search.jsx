@@ -12,7 +12,8 @@ const Search = () => {
     useEffect(() => {
         if (query && animeList.length > 0) {
             const filtered = animeList.filter(anime =>
-                anime.title.toLowerCase().includes(query.toLowerCase())
+                anime.title.toLowerCase().includes(query.toLowerCase()) ||
+                anime.genres?.some(genre => genre.toLowerCase().includes(query.toLowerCase()))
             );
             setResults(filtered);
         } else {

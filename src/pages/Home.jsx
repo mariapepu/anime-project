@@ -38,6 +38,19 @@ const Home = () => {
 
     if (loading) return <div className="text-white pt-20 pl-10">Loading...</div>;
 
+    // Dynamic Genre Calculation
+    const genreCounts = {};
+    animeList.forEach(anime => {
+        anime.genres?.forEach(genre => {
+            const normalizedGenre = genre.toLowerCase().trim();
+            genreCounts[normalizedGenre] = (genreCounts[normalizedGenre] || 0) + 1;
+        });
+    });
+
+    const significantGenres = Object.keys(genreCounts)
+        .filter(genre => genreCounts[genre] >= 3)
+        .sort((a, b) => genreCounts[b] - genreCounts[a]);
+
     return (
         <>
             <Navbar />
@@ -48,7 +61,15 @@ const Home = () => {
                 )}
                 <Row title="Trending Now" animes={animeList} onPlay={handlePlay} />
                 <Row title="New Releases" animes={[...animeList].reverse()} onPlay={handlePlay} />
-                <Row title="Action Anime" animes={animeList} onPlay={handlePlay} />
+
+                {significantGenres.map(genre => (
+                    <Row
+                        key={genre}
+                        title={genre.charAt(0).toUpperCase() + genre.slice(1)}
+                        animes={animeList.filter(a => a.genres?.some(g => g.toLowerCase().trim() === genre))}
+                        onPlay={handlePlay}
+                    />
+                ))}
             </div>
             {playingAnime && (
                 <Player anime={playingAnime} onClose={handleClosePlayer} />
