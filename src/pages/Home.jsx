@@ -44,7 +44,7 @@ const Home = () => {
             <Hero anime={featuredAnime} onPlay={handlePlay} />
             <div style={{ marginTop: '-120px', position: 'relative', zIndex: 10 }}>
                 {continueWatching.length > 0 && (
-                    <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} />
+                    <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} isPlayableCard={true} />
                 )}
                 <Row title="Trending Now" animes={animeList} onPlay={handlePlay} />
                 <Row title="New Releases" animes={[...animeList].reverse()} onPlay={handlePlay} />

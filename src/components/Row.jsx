@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const Row = ({ title, animes, onPlay }) => {
+const Row = ({ title, animes, onPlay, isPlayableCard }) => {
     const rowRef = useRef(null);
     const navigate = useNavigate();
 
@@ -67,7 +67,7 @@ const Row = ({ title, animes, onPlay }) => {
                     {animes.map((anime) => (
                         <div
                             key={anime.id}
-                            onClick={() => navigate(`/title/${anime.id}`)}
+                            onClick={() => isPlayableCard ? onPlay(anime) : navigate(`/title/${anime.id}`)}
                             style={{
                                 flex: '0 0 auto',
                                 width: '250px',
@@ -96,6 +96,22 @@ const Row = ({ title, animes, onPlay }) => {
                             }}>
                                 {anime.title}
                             </p>
+                            {isPlayableCard && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '30%',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    borderRadius: '50%',
+                                    padding: '0.5rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
