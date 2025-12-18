@@ -10,14 +10,36 @@ const Movies = () => {
 
     if (loading) return <div className="text-white pt-20 pl-[4%]">Loading...</div>;
 
-    const movies = animeList.filter(anime => anime.category === 'Movie');
+    const moviesList = animeList.filter(anime => anime.category === 'Movie');
+
+    // Dynamic Genre Calculation (No Threshold for Movies)
+    const genreCounts = {};
+    moviesList.forEach(anime => {
+        anime.genres?.forEach(genre => {
+            const normalizedGenre = genre.toLowerCase().trim();
+            genreCounts[normalizedGenre] = (genreCounts[normalizedGenre] || 0) + 1;
+        });
+    });
+
+    const categories = Object.keys(genreCounts)
+        .sort((a, b) => genreCounts[b] - genreCounts[a]);
 
     return (
         <>
             <Navbar />
             <div className='w-full text-white pt-[100px]'>
                 <h1 className='text-3xl font-bold mb-4 px-[4%]'>Movies</h1>
-                <Row title="All Movies" animes={movies} onPlay={setPlayingAnime} />
+
+                {categories.map(genre => (
+                    <Row
+                        key={genre}
+                        title={genre.charAt(0).toUpperCase() + genre.slice(1)}
+                        animes={moviesList.filter(a => a.genres?.some(g => g.toLowerCase().trim() === genre))}
+                        onPlay={setPlayingAnime}
+                    />
+                ))}
+
+                <Row title="All Movies" animes={moviesList} onPlay={setPlayingAnime} />
             </div>
             {playingAnime && (
                 <Player anime={playingAnime} onClose={() => setPlayingAnime(null)} />

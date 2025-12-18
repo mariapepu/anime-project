@@ -60,7 +60,9 @@ const Home = () => {
                     <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} isPlayableCard={true} />
                 )}
                 <Row title="Trending Now" animes={animeList} onPlay={handlePlay} />
-                <Row title="New Releases" animes={[...animeList].reverse()} onPlay={handlePlay} />
+                {animeList.filter(a => a.isNew).length > 0 && (
+                    <Row title="New Releases" animes={animeList.filter(a => a.isNew)} onPlay={handlePlay} />
+                )}
 
                 {significantGenres.map(genre => (
                     <Row
