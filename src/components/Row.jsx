@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const Row = ({ title, animes, onPlay, isPlayableCard }) => {
+const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
     const rowRef = useRef(null);
     const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                     ref={rowRef}
                     style={{
                         display: 'flex',
-                        gap: '0.5rem',
+                        gap: showRank ? '3rem' : '0.5rem', // Extra gap for numbers to prevent overlap mess
                         overflowX: 'scroll',
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
@@ -64,7 +64,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                     }}
                     className="no-scrollbar"
                 >
-                    {animes.map((anime) => (
+                    {animes.map((anime, index) => (
                         <div
                             key={anime.id}
                             onClick={() => isPlayableCard ? onPlay(anime) : navigate(`/title/${anime.id}`)}
@@ -76,6 +76,23 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                                 position: 'relative',
                             }}
                         >
+                            {showRank && (
+                                <div style={{
+                                    position: 'absolute',
+                                    left: '-2rem', // Shift left to overlap the image
+                                    bottom: '10px',
+                                    zIndex: 20,
+                                    fontSize: '7rem',
+                                    fontWeight: '900',
+                                    color: 'rgba(0,0,0,0)',
+                                    WebkitTextStroke: '2px #888', // Premium hollow outline
+                                    userSelect: 'none',
+                                    pointerEvents: 'none',
+                                    lineHeight: '1'
+                                }}>
+                                    {index + 1}
+                                </div>
+                            )}
                             <img
                                 className="anime-image"
                                 src={anime.image}
@@ -84,13 +101,16 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                                     width: '100%',
                                     height: '140px',
                                     objectFit: 'cover',
+                                    position: 'relative',
+                                    zIndex: 10
                                 }}
                             />
                             <p style={{
                                 marginTop: '0.5rem',
                                 color: '#999',
                                 fontSize: '0.9rem',
-                                fontWeight: '500'
+                                fontWeight: '500',
+                                paddingLeft: showRank ? '2rem' : '0' // Adjust text to not be hidden by number if needed
                             }}>
                                 {anime.title}
                             </p>

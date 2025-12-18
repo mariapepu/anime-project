@@ -59,7 +59,7 @@ const Home = () => {
                 {continueWatching.length > 0 && (
                     <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} isPlayableCard={true} />
                 )}
-                <Row title="Trending Now" animes={trendingList} onPlay={handlePlay} />
+                <Row title="Trending Now" animes={trendingList} onPlay={handlePlay} showRank={true} />
                 {animeList.filter(a => a.isNew).length > 0 && (
                     <Row title="New Releases" animes={animeList.filter(a => a.isNew)} onPlay={handlePlay} />
                 )}
