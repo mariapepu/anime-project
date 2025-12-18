@@ -19,8 +19,10 @@ const Account = () => {
     const [message, setMessage] = useState('');
     const [bannerURL, setBannerURL] = useState('');
     const [savedBanner, setSavedBanner] = useState('');
-    const [bannerPosition, setBannerPosition] = useState({ x: 50, y: 50 });
+    const [bannerPosition, setBannerPosition] = useState({ x: 50, y: 100 });
+    const [bannerZoom, setBannerZoom] = useState(1);
     const [photoPosition, setPhotoPosition] = useState({ x: 50, y: 50 });
+    const [photoZoom, setPhotoZoom] = useState(1);
     const [cropperTarget, setCropperTarget] = useState(null); // 'banner' or 'photo'
     const [myList, setMyList] = useState([]);
 
@@ -44,8 +46,14 @@ const Account = () => {
                                 setBannerPosition(data.bannerPosition);
                             }
                         }
+                        if (data.bannerZoom !== undefined) {
+                            setBannerZoom(data.bannerZoom);
+                        }
                         if (data.photoPosition !== undefined) {
                             setPhotoPosition(data.photoPosition);
+                        }
+                        if (data.photoZoom !== undefined) {
+                            setPhotoZoom(data.photoZoom);
                         }
                     }
                 } catch (err) {
@@ -96,7 +104,9 @@ const Account = () => {
             const updateData = {
                 bannerURL: bannerURL,
                 bannerPosition: bannerPosition,
-                photoPosition: photoPosition
+                bannerZoom: bannerZoom,
+                photoPosition: photoPosition,
+                photoZoom: photoZoom
             };
 
             if (!docSnap.exists()) {
@@ -116,12 +126,19 @@ const Account = () => {
     return (
         <div className='w-full text-white bg-[#141414] min-h-screen'>
             <Navbar />
-            <div className='relative w-full h-[450px]'>
+            <div className='relative w-full h-[450px] overflow-hidden'>
                 <img
-                    className='w-full h-full object-cover'
+                    className='absolute object-cover'
                     src={savedBanner || defaultBanner}
                     alt='/'
-                    style={{ objectPosition: savedBanner ? `${bannerPosition.x}% ${bannerPosition.y}%` : 'center bottom' }}
+                    style={{
+                        width: `${savedBanner ? bannerZoom * 100 : 100}%`,
+                        height: `${savedBanner ? bannerZoom * 100 : 100}%`,
+                        top: `${savedBanner ? bannerPosition.y : 100}%`,
+                        left: `${savedBanner ? bannerPosition.x : 50}%`,
+                        transform: `translate(-${savedBanner ? bannerPosition.x : 50}%, -${savedBanner ? bannerPosition.y : 100}%)`,
+                        objectPosition: savedBanner ? `${bannerPosition.x}% ${bannerPosition.y}%` : 'center bottom'
+                    }}
                 />
                 <div className='absolute w-full h-full top-0 left-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent'></div>
             </div>
@@ -134,13 +151,20 @@ const Account = () => {
                 {!editing ? (
                     <div>
                         <div className='flex items-center gap-4 mb-6'>
-                            <div className='w-20 h-20 bg-gray-500 rounded overflow-hidden'>
+                            <div className='w-20 h-20 bg-gray-500 rounded overflow-hidden relative'>
                                 {user?.photoURL ? (
                                     <img
                                         src={user.photoURL}
                                         alt="Profile"
-                                        className='w-full h-full object-cover'
-                                        style={{ objectPosition: `${photoPosition.x}% ${photoPosition.y}%` }}
+                                        className='absolute object-cover'
+                                        style={{
+                                            width: `${photoZoom * 100}%`,
+                                            height: `${photoZoom * 100}%`,
+                                            top: `${photoPosition.y}%`,
+                                            left: `${photoPosition.x}%`,
+                                            transform: `translate(-${photoPosition.x}%, -${photoPosition.y}%)`,
+                                            objectPosition: `${photoPosition.x}% ${photoPosition.y}%`
+                                        }}
                                     />
                                 ) : (
                                     <div className='w-full h-full flex items-center justify-center text-2xl'>
@@ -297,8 +321,13 @@ const Account = () => {
                                 <img
                                     src={cropperTarget === 'banner' ? (bannerURL || defaultBanner) : (photoURL || user?.photoURL)}
                                     alt="Preview"
-                                    className='w-full h-full object-cover'
+                                    className='absolute object-cover'
                                     style={{
+                                        width: `${(cropperTarget === 'banner' ? bannerZoom : photoZoom) * 100}%`,
+                                        height: `${(cropperTarget === 'banner' ? bannerZoom : photoZoom) * 100}%`,
+                                        top: `${cropperTarget === 'banner' ? bannerPosition.y : photoPosition.y}%`,
+                                        left: `${cropperTarget === 'banner' ? bannerPosition.x : photoPosition.x}%`,
+                                        transform: `translate(-${cropperTarget === 'banner' ? bannerPosition.x : photoPosition.x}%, -${cropperTarget === 'banner' ? bannerPosition.y : photoPosition.y}%)`,
                                         objectPosition: cropperTarget === 'banner'
                                             ? `${bannerPosition.x}% ${bannerPosition.y}%`
                                             : `${photoPosition.x}% ${photoPosition.y}%`
@@ -325,6 +354,10 @@ const Account = () => {
                                         }}
                                         className='w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--primary)]'
                                     />
+                                    <div className='flex justify-between text-[10px] text-gray-600 mt-1'>
+                                        <span>Left</span>
+                                        <span>Right</span>
+                                    </div>
                                 </div>
 
                                 <div>
@@ -344,6 +377,34 @@ const Account = () => {
                                         }}
                                         className='w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--primary)]'
                                     />
+                                    <div className='flex justify-between text-[10px] text-gray-600 mt-1'>
+                                        <span>Top</span>
+                                        <span>Bottom</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div className='flex justify-between text-xs text-gray-500 mb-1'>
+                                        <span>Zoom</span>
+                                        <span>{cropperTarget === 'banner' ? bannerZoom.toFixed(1) : photoZoom.toFixed(1)}x</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max="3"
+                                        step="0.1"
+                                        value={cropperTarget === 'banner' ? bannerZoom : photoZoom}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            if (cropperTarget === 'banner') setBannerZoom(val);
+                                            else setPhotoZoom(val);
+                                        }}
+                                        className='w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--primary)]'
+                                    />
+                                    <div className='flex justify-between text-[10px] text-gray-600 mt-1'>
+                                        <span>Far</span>
+                                        <span>Near</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
