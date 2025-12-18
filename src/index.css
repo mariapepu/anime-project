@@ -84,6 +84,17 @@ button {
   background-color: rgba(255, 255, 255, 0.75);
 }
 
+.anime-card .anime-image {
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.anime-card:hover .anime-image {
+  box-shadow: 0 0 15px var(--primary);
+  outline: 2px solid var(--primary);
+  z-index: 10;
+}
+
 .btn-secondary {
   background-color: rgba(109, 109, 110, 0.7);
   color: var(--text);

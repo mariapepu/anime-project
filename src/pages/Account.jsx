@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import defaultBanner from '../assets/profile_default_banner.png';
+import Navbar from '../components/Navbar';
 
 const Account = () => {
     const { user, logOut, updateUserProfile, updateUserEmail, updateUserPassword } = UserAuth();
@@ -13,6 +17,40 @@ const Account = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [bannerURL, setBannerURL] = useState('');
+    const [savedBanner, setSavedBanner] = useState('');
+    const [myList, setMyList] = useState([]);
+
+    // Fetch user data from Firestore for extra fields like bannerURL
+    React.useEffect(() => {
+        const fetchUserData = async () => {
+            if (user?.email) {
+                try {
+                    const docRef = doc(db, 'users', user.email);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.bannerURL) {
+                            setSavedBanner(data.bannerURL);
+                            setBannerURL(data.bannerURL);
+                        }
+                    }
+                } catch (err) {
+                    console.log("Error fetching user data:", err);
+                }
+
+                // Fetch My List
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'users', user.email, 'savedShows'));
+                    const listData = querySnapshot.docs.map(doc => doc.data());
+                    setMyList(listData);
+                } catch (err) {
+                    console.log("Error fetching my list:", err);
+                }
+            }
+        };
+        fetchUserData();
+    }, [user]);
 
     const handleLogout = async () => {
         try {
@@ -38,6 +76,18 @@ const Account = () => {
             if (password) {
                 await updateUserPassword(password);
             }
+
+            // Update Firestore for bannerURL
+            const userRef = doc(db, 'users', user.email);
+            // Check if doc exists first, if not setDoc, else updateDoc
+            const docSnap = await getDoc(userRef);
+            if (!docSnap.exists()) {
+                await setDoc(userRef, { bannerURL: bannerURL }, { merge: true });
+            } else {
+                await updateDoc(userRef, { bannerURL: bannerURL });
+            }
+            setSavedBanner(bannerURL);
+
             setMessage('Profile updated successfully!');
             setEditing(false);
         } catch (err) {
@@ -46,14 +96,17 @@ const Account = () => {
     };
 
     return (
-        <div className='w-full text-white'>
-            <img
-                className='w-full h-[400px] object-cover'
-                src='https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/US-en-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg'
-                alt='/'
-            />
-            <div className='bg-black/60 fixed top-0 left-0 w-full h-[550px]'></div>
-            <div className='absolute top-[20%] p-4 md:p-8 w-full max-w-[600px]'>
+        <div className='w-full text-white bg-[#141414] min-h-screen'>
+            <Navbar />
+            <div className='relative w-full h-[450px]'>
+                <img
+                    className='w-full h-full object-cover object-bottom'
+                    src={savedBanner || defaultBanner}
+                    alt='/'
+                />
+                <div className='absolute w-full h-full top-0 left-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent'></div>
+            </div>
+            <div className='px-[4%] py-8 relative -mt-32 z-20'>
                 <h1 className='text-3xl md:text-5xl font-bold mb-8'>My Account</h1>
 
                 {message && <p className='p-3 bg-green-500 my-2 rounded'>{message}</p>}
@@ -80,16 +133,40 @@ const Account = () => {
                         <div className='flex gap-4'>
                             <button
                                 onClick={() => setEditing(true)}
-                                className='bg-white text-black px-6 py-2 font-bold rounded hover:bg-gray-200 transition'
+                                className='bg-[var(--primary)] text-black px-6 py-2 font-bold rounded hover:bg-opacity-80 transition'
                             >
                                 Edit Profile
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className='border border-gray-500 px-6 py-2 font-bold rounded hover:bg-gray-900 transition'
+                                className='bg-[#9c7880]/90 text-white px-6 py-2 font-bold rounded hover:bg-[#8a6a72] transition'
                             >
                                 Logout
                             </button>
+                        </div>
+
+                        {/* My List Section in Account */}
+                        <div className='mt-12'>
+                            <h2 className='text-2xl font-bold mb-4'>My List</h2>
+                            <div className='flex overflow-x-scroll whitespace-nowrap scrollbar-hide gap-4 pb-4'>
+                                {myList.map((item, id) => (
+                                    <div
+                                        key={id}
+                                        className='w-[160px] sm:w-[200px] inline-block cursor-pointer relative p-2 anime-card'
+                                        onClick={() => navigate(`/title/${item.id}`)}
+                                    >
+                                        <img
+                                            className='w-full h-auto block rounded anime-image'
+                                            src={item.image}
+                                            alt={item.title}
+                                        />
+                                        <p className='text-sm mt-2 text-gray-300 truncate'>{item.title}</p>
+                                    </div>
+                                ))}
+                                {myList.length === 0 && (
+                                    <p className='text-gray-500'>Your list is empty.</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -115,6 +192,16 @@ const Account = () => {
                                 />
                             </div>
                             <div>
+                                <label className='block text-gray-400 text-sm mb-1'>Banner URL</label>
+                                <input
+                                    type="text"
+                                    value={bannerURL}
+                                    onChange={(e) => setBannerURL(e.target.value)}
+                                    className='w-full p-3 bg-gray-700 rounded text-white'
+                                    placeholder="https://example.com/banner.jpg"
+                                />
+                            </div>
+                            <div>
                                 <label className='block text-gray-400 text-sm mb-1'>Email</label>
                                 <input
                                     type="email"
@@ -137,7 +224,7 @@ const Account = () => {
                             <div className='flex gap-4 mt-4'>
                                 <button
                                     type="submit"
-                                    className='bg-red-600 px-6 py-2 font-bold rounded hover:bg-red-700 transition'
+                                    className='bg-[var(--primary)] text-black px-6 py-2 font-bold rounded hover:bg-opacity-80 transition'
                                 >
                                     Save
                                 </button>

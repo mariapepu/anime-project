@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
+import doorImg from '../assets/door.png';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -22,8 +23,8 @@ const Signup = () => {
         <>
             <div className='w-full h-screen'>
                 <img
-                    className='hidden sm:block absolute w-full h-full object-cover'
-                    src='https://img.freepik.com/free-photo/cozy-morning-stretch-cute-cat-pink-blanket_23-2152029023.jpg?semt=ais_hybrid&w=740&q=80'
+                    className='absolute w-full h-full object-cover'
+                    src={doorImg}
                     alt='/'
                 />
                 <div className='bg-black/60 fixed top-0 left-0 w-full h-screen'></div>

@@ -219,11 +219,12 @@ const Navbar = () => {
             )}
             {/* Temporary Seed Button */}
             <button
+                disabled
                 onClick={async () => {
                     const { seedDatabase } = await import('../utils/seedDatabase');
                     seedDatabase();
                 }}
-                className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded z-[100] font-bold"
+                className="fixed bottom-4 right-4 bg-yellow-500 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed text-black px-4 py-2 rounded z-[100] font-bold"
             >
                 SEED DB
             </button>

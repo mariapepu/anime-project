@@ -1,31 +1,35 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
+import doorImg from '../assets/door.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const { logIn } = UserAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
         try {
             await logIn(email, password);
             navigate('/');
         } catch (error) {
             console.log(error);
             setError(error.message);
+            setLoading(false);
         }
     };
 
     return (
-        <div className='w-full h-screen'>
+        <div className='w-full h-screen overflow-hidden'>
             <img
-                className='hidden sm:block absolute w-full h-full object-cover'
-                src='https://img.freepik.com/free-photo/cozy-morning-stretch-cute-cat-pink-blanket_23-2152029023.jpg?semt=ais_hybrid&w=740&q=80'
+                className='absolute w-full h-full object-cover'
+                src={doorImg}
                 alt='/'
             />
             <div className='bg-black/60 fixed top-0 left-0 w-full h-screen'></div>
@@ -49,8 +53,12 @@ const Login = () => {
                                 placeholder='Password'
                                 autoComplete='current-password'
                             />
-                            <button className='bg-[var(--primary)] py-3 my-6 rounded font-bold text-black'>
-                                Sign In
+                            <button disabled={loading} className='bg-[var(--primary)] py-3 my-6 rounded font-bold text-black flex justify-center items-center'>
+                                {loading ? (
+                                    <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    'Sign In'
+                                )}
                             </button>
                             <div className='flex justify-between items-center text-sm text-gray-600'>
                                 <p>

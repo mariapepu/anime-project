@@ -11,8 +11,8 @@ const Movies = () => {
     return (
         <>
             <Navbar />
-            <div className='w-full text-white pt-[100px] px-4'>
-                <h1 className='text-3xl font-bold mb-4'>Movies</h1>
+            <div className='w-full text-white pt-[100px]'>
+                <h1 className='text-3xl font-bold mb-4 px-[4%]'>Movies</h1>
                 <Row title="All Movies" animes={movies} onPlay={setPlayingAnime} />
             </div>
             {playingAnime && (

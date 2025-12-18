@@ -4,9 +4,13 @@ import { useAnime } from '../context/AnimeContext';
 import Navbar from '../components/Navbar';
 import Player from '../components/Player';
 import { Play, Plus, Check } from 'lucide-react';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { UserAuth } from '../context/AuthContext';
 
 const TitleDetails = () => {
     const { id } = useParams();
+    const { user } = UserAuth();
     const { animeList, featuredAnime } = useAnime();
     const [anime, setAnime] = useState(null);
     const [playing, setPlaying] = useState(false);
@@ -24,7 +28,41 @@ const TitleDetails = () => {
             setAnime(featuredAnime);
         }
         window.scrollTo(0, 0);
-    }, [id, animeList, featuredAnime]);
+
+        // Check if in My List
+        const checkList = async () => {
+            if (user?.email && id) {
+                const docRef = doc(db, 'users', user.email, 'savedShows', id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setInList(true);
+                } else {
+                    setInList(false);
+                }
+            }
+        }
+        checkList();
+
+    }, [id, animeList, featuredAnime, user]);
+
+    const toggleList = async () => {
+        if (!user?.email || !anime) return;
+        const animeId = anime.id.toString();
+        const docRef = doc(db, 'users', user.email, 'savedShows', animeId);
+
+        if (inList) {
+            await deleteDoc(docRef);
+            setInList(false);
+        } else {
+            await setDoc(docRef, {
+                id: animeId,
+                title: anime.title,
+                image: anime.image,
+                category: anime.category || 'Series'
+            });
+            setInList(true);
+        }
+    };
 
     if (!anime) return <div className="text-white pt-20">Loading...</div>;
 
@@ -68,7 +106,7 @@ const TitleDetails = () => {
                             <Play size={24} fill="black" /> Play
                         </button>
                         <button
-                            onClick={() => setInList(!inList)}
+                            onClick={toggleList}
                             className="bg-[#9c7880]/90 text-white px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-[#8a6a72] transition"
                         >
                             {inList ? <Check size={24} /> : <Plus size={24} />}

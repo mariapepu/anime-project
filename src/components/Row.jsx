@@ -68,24 +68,22 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                         <div
                             key={anime.id}
                             onClick={() => isPlayableCard ? onPlay(anime) : navigate(`/title/${anime.id}`)}
+                            className="anime-card"
                             style={{
                                 flex: '0 0 auto',
                                 width: '250px',
                                 cursor: 'pointer',
-                                transition: 'transform 0.3s',
                                 position: 'relative',
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         >
                             <img
+                                className="anime-image"
                                 src={anime.image}
                                 alt={anime.title}
                                 style={{
                                     width: '100%',
                                     height: '140px',
                                     objectFit: 'cover',
-                                    borderRadius: '4px',
                                 }}
                             />
                             <p style={{
@@ -96,22 +94,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard }) => {
                             }}>
                                 {anime.title}
                             </p>
-                            {isPlayableCard && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '30%',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    backgroundColor: 'rgba(0,0,0,0.7)',
-                                    borderRadius: '50%',
-                                    padding: '0.5rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                                </div>
-                            )}
+
                         </div>
                     ))}
                 </div>

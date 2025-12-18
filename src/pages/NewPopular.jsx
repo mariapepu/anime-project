@@ -11,8 +11,8 @@ const NewPopular = () => {
     return (
         <>
             <Navbar />
-            <div className='w-full text-white pt-[100px] px-4'>
-                <h1 className='text-3xl font-bold mb-4'>New & Popular</h1>
+            <div className='w-full text-white pt-[100px]'>
+                <h1 className='text-3xl font-bold mb-4 px-[4%]'>New & Popular</h1>
                 <Row title="New Releases" animes={newReleases} onPlay={setPlayingAnime} />
                 <Row title="Trending Now" animes={animeList} onPlay={setPlayingAnime} />
             </div>
