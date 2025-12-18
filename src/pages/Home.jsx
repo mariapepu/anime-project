@@ -12,7 +12,7 @@ const Home = () => {
     const [playingAnime, setPlayingAnime] = useState(null);
     const [continueWatching, setContinueWatching] = useState([]);
     const { user } = UserAuth();
-    const { animeList, featuredAnime, loading } = useAnime();
+    const { animeList, trendingList, featuredAnime, loading } = useAnime();
 
     useEffect(() => {
         const fetchProgress = async () => {
@@ -59,7 +59,7 @@ const Home = () => {
                 {continueWatching.length > 0 && (
                     <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} isPlayableCard={true} />
                 )}
-                <Row title="Trending Now" animes={animeList} onPlay={handlePlay} />
+                <Row title="Trending Now" animes={trendingList} onPlay={handlePlay} />
                 {animeList.filter(a => a.isNew).length > 0 && (
                     <Row title="New Releases" animes={animeList.filter(a => a.isNew)} onPlay={handlePlay} />
                 )}
