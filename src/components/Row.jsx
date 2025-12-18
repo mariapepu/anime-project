@@ -93,37 +93,37 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                 {shouldShowNewBadge && (
                                     <div style={{
                                         position: 'absolute',
-                                        top: '10px',
-                                        left: '10px',
+                                        top: '12px', // Slightly adjusted from 10px to give shadow room
+                                        left: '12px', // Slightly adjusted from 10px to give shadow room
                                         backgroundColor: '#FFB6C1',
                                         color: '#141414',
-                                        padding: '2px 8px',
+                                        padding: '2px 10px',
                                         fontSize: '0.65rem',
                                         fontWeight: '900',
-                                        borderRadius: '2px',
+                                        borderRadius: '4px', // Increased rounding
                                         zIndex: 30,
                                         textTransform: 'uppercase',
-                                        boxShadow: '0 0 4px rgba(20, 20, 20, 0.8)' // Subtle dark shadow for better visibility
+                                        boxShadow: '0 0 6px rgba(0, 0, 0, 0.9)' // Deeper shadow, less spread
                                     }}>
-                                        NUEVO
+                                        NEW
                                     </div>
                                 )}
                                 {shouldShowNewEpisodeBadge && (
                                     <div style={{
                                         position: 'absolute',
-                                        top: '10px',
-                                        left: '10px',
+                                        top: '12px',
+                                        left: '12px',
                                         backgroundColor: '#FFB6C1',
                                         color: '#141414',
-                                        padding: '2px 8px',
+                                        padding: '2px 10px',
                                         fontSize: '0.65rem',
                                         fontWeight: '900',
-                                        borderRadius: '2px',
+                                        borderRadius: '4px', // Increased rounding
                                         zIndex: 30,
                                         textTransform: 'uppercase',
-                                        boxShadow: '0 0 4px rgba(20, 20, 20, 0.8)' // Subtle dark shadow for better visibility
+                                        boxShadow: '0 0 6px rgba(0, 0, 0, 0.9)' // Deeper shadow, less spread
                                     }}>
-                                        NUEVO EPIS.
+                                        NEW EPIS.
                                     </div>
                                 )}
 
