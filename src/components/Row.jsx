@@ -93,19 +93,19 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                 {shouldShowNewBadge && (
                                     <div style={{
                                         position: 'absolute',
-                                        top: '12px', // Slightly adjusted from 10px to give shadow room
-                                        left: '12px', // Slightly adjusted from 10px to give shadow room
-                                        backgroundColor: '#FFB6C1',
+                                        top: '12px',
+                                        left: '12px',
+                                        backgroundColor: '#f2c2cb', // dusty pink más elegante
                                         color: '#141414',
-                                        padding: '2px 10px',
-                                        fontSize: '0.65rem',
-                                        fontWeight: '900',
-                                        borderRadius: '4px', // Increased rounding
+                                        padding: '2px 9px',
+                                        fontSize: '0.7rem',
+                                        fontWeight: '800',
+                                        borderRadius: '2px', // Esquinas más rectas/profesionales
                                         zIndex: 30,
-                                        textTransform: 'uppercase',
-                                        boxShadow: '0 0 6px rgba(0, 0, 0, 0.9)' // Deeper shadow, less spread
+                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)', // Sombra con profundidad natural
+                                        letterSpacing: '0.2px'
                                     }}>
-                                        NEW
+                                        New
                                     </div>
                                 )}
                                 {shouldShowNewEpisodeBadge && (
@@ -113,17 +113,17 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                         position: 'absolute',
                                         top: '12px',
                                         left: '12px',
-                                        backgroundColor: '#FFB6C1',
+                                        backgroundColor: '#f2c2cb',
                                         color: '#141414',
-                                        padding: '2px 10px',
-                                        fontSize: '0.65rem',
-                                        fontWeight: '900',
-                                        borderRadius: '4px', // Increased rounding
+                                        padding: '2px 9px',
+                                        fontSize: '0.7rem',
+                                        fontWeight: '800',
+                                        borderRadius: '2px',
                                         zIndex: 30,
-                                        textTransform: 'uppercase',
-                                        boxShadow: '0 0 6px rgba(0, 0, 0, 0.9)' // Deeper shadow, less spread
+                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+                                        letterSpacing: '0.2px'
                                     }}>
-                                        NEW EPIS.
+                                        New epis.
                                     </div>
                                 )}
 
