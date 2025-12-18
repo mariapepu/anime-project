@@ -59,7 +59,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                         overflowX: 'scroll',
                         scrollbarWidth: 'none',
                         msOverflowStyle: 'none',
-                        padding: showRank ? '1rem 4rem' : '1rem 1rem', // Responsive padding for numbers
+                        padding: showRank ? '1rem 2.5rem' : '1rem 1rem', // Responsive padding for numbers
                         scrollBehavior: 'smooth'
                     }}
                     className="no-scrollbar"
@@ -86,7 +86,7 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                         zIndex: 20,
                                         fontSize: '8rem',
                                         fontWeight: '900',
-                                        background: 'linear-gradient(to right, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0.4) 100%)',
+                                        background: 'linear-gradient(to right, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0.3) 100%)',
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         WebkitTextStroke: '2px #FFB6C1',
