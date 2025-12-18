@@ -79,16 +79,17 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                             {showRank && (
                                 <div style={{
                                     position: 'absolute',
-                                    left: '-2rem', // Shift left to overlap the image
-                                    bottom: '10px',
+                                    left: '-1.5rem', // Slight overlap
+                                    bottom: '5px',
                                     zIndex: 20,
-                                    fontSize: '7rem',
+                                    fontSize: '8rem',
                                     fontWeight: '900',
-                                    color: 'rgba(0,0,0,0)',
-                                    WebkitTextStroke: '2px #888', // Premium hollow outline
+                                    color: 'rgba(20, 20, 20, 0.7)', // Semi-transparent dark gray for contrast
+                                    WebkitTextStroke: '2px #FFB6C1', // Brand pink outline
                                     userSelect: 'none',
                                     pointerEvents: 'none',
-                                    lineHeight: '1'
+                                    lineHeight: '0.8',
+                                    fontFamily: 'system-ui, sans-serif'
                                 }}>
                                     {index + 1}
                                 </div>

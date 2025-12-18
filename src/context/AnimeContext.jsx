@@ -35,15 +35,17 @@ export function AnimeContextProvider({ children }) {
                     }
                 });
 
-                // 3. Sort animes by popularity counts
-                const sortedByPopularity = [...list].sort((a, b) => {
-                    const countA = popularityMap[a.id] || 0;
-                    const countB = popularityMap[b.id] || 0;
-                    return countB - countA; // Descending
-                });
+                // 3. Sort animes by popularity counts and filter for > 0
+                const sortedByPopularity = [...list]
+                    .filter(a => (popularityMap[a.id] || 0) > 0)
+                    .sort((a, b) => {
+                        const countA = popularityMap[a.id] || 0;
+                        const countB = popularityMap[b.id] || 0;
+                        return countB - countA; // Descending
+                    });
 
-                // Limit top trending or keep all sorted
-                setTrendingList(sortedByPopularity);
+                // Limit to top 10 trending
+                setTrendingList(sortedByPopularity.slice(0, 10));
 
                 // 4. Find featured from list or fallback to first
                 const featuredItem = list.find(item => item.featured === true);
