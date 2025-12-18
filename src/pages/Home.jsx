@@ -29,7 +29,14 @@ const Home = () => {
     }, [user, playingAnime]);
 
     const handlePlay = (anime) => {
-        setPlayingAnime(anime);
+        // Find the full anime object from animeList to ensure we have seasons/episodes
+        const fullAnime = animeList.find(a => a.id === (anime.id || anime.animeId));
+        if (fullAnime) {
+            // Merge progress info if needed, but primarily use fullAnime
+            setPlayingAnime({ ...fullAnime, currentVideo: anime.video });
+        } else {
+            setPlayingAnime(anime);
+        }
     };
 
     const handleClosePlayer = () => {
@@ -74,7 +81,7 @@ const Home = () => {
                 ))}
             </div>
             {playingAnime && (
-                <Player anime={playingAnime} onClose={handleClosePlayer} />
+                <Player anime={playingAnime} onClose={handleClosePlayer} videoUrl={playingAnime.currentVideo} />
             )}
         </>
     );

@@ -85,19 +85,61 @@ const Player = ({ anime, onClose, videoUrl }) => {
         if (user?.email && currentAnimeId && videoRef.current) {
             const currentTime = videoRef.current.currentTime;
             const duration = videoRef.current.duration;
-            console.log("Player: Saving progress", currentTime);
+            const progressPercent = (currentTime / duration) * 100;
+
+            console.log(`Player: Saving progress ${currentTime}/${duration} (${progressPercent.toFixed(1)}%)`);
 
             try {
+                // Find current episode and season info for Series
+                let currentSeason = 1;
+                let currentEpNo = 1;
+                let currentEpTitle = anime.title;
+                let nextEpisode = null;
+
+                if (anime.category === 'Series' && anime.seasons) {
+                    // Try to find current episode index based on videoUrl
+                    for (let s of anime.seasons) {
+                        const epIndex = s.episodes.findIndex(ep => ep.video === (videoUrl || anime.video));
+                        if (epIndex !== -1) {
+                            currentSeason = s.season;
+                            currentEpNo = s.episodes[epIndex].id;
+                            currentEpTitle = s.episodes[epIndex].title;
+
+                            // Progress to next episode if near end (>95%)
+                            if (progressPercent > 95) {
+                                if (epIndex < s.episodes.length - 1) {
+                                    // Next in same season
+                                    nextEpisode = { ...s.episodes[epIndex + 1], season: s.season };
+                                } else {
+                                    // Try next season
+                                    const nextSeasonIndex = anime.seasons.findIndex(sec => sec.season === s.season + 1);
+                                    if (nextSeasonIndex !== -1 && anime.seasons[nextSeasonIndex].episodes.length > 0) {
+                                        nextEpisode = { ...anime.seasons[nextSeasonIndex].episodes[0], season: s.season + 1 };
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // If finished and has next, save NEXT episode with 0 progress
+                const finished = progressPercent > 95;
+
                 await setDoc(doc(db, 'users', user.email, 'progress', currentAnimeId.toString()), {
                     animeId: currentAnimeId,
-                    title: anime.title,
+                    title: nextEpisode ? nextEpisode.title : currentEpTitle,
                     image: anime.image,
-                    video: videoUrl || anime.video,
-                    timestamp: currentTime,
+                    video: nextEpisode ? nextEpisode.video : (videoUrl || anime.video),
+                    timestamp: nextEpisode ? 0 : currentTime, // Reset for next ep
                     lastWatched: new Date(),
-                    duration: duration
+                    duration: nextEpisode ? 0 : duration, // Will update when played
+                    category: anime.category,
+                    season: nextEpisode ? nextEpisode.season : currentSeason,
+                    episodeNo: nextEpisode ? nextEpisode.id : currentEpNo,
+                    animeTitle: anime.title // Full series title
                 });
-                console.log("Player: Progress saved successfully");
+                console.log("Player: Progress saved successfully", nextEpisode ? " (Advanced to Next Ep)" : "");
             } catch (error) {
                 console.error("Player: Error saving progress", error);
             }

@@ -155,26 +155,79 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                         {index + 1}
                                     </div>
                                 )}
-                                <img
+                                <div
                                     className="anime-image"
-                                    src={anime.image}
-                                    alt={anime.title}
                                     style={{
-                                        width: '100%',
-                                        height: '140px',
-                                        objectFit: 'cover',
                                         position: 'relative',
-                                        zIndex: 10
+                                        overflow: 'hidden',
+                                        borderRadius: '4px',
+                                        height: '140px' // Move height here
                                     }}
-                                />
+                                >
+                                    <img
+                                        src={anime.image}
+                                        alt={anime.title}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            position: 'relative',
+                                            zIndex: 10
+                                        }}
+                                    />
+                                    {/* Dark gradient for bar visibility (only for Continue Watching) */}
+                                    {isPlayableCard && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '40px',
+                                            background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                                            zIndex: 15
+                                        }} />
+                                    )}
+
+                                    {/* Progress Bar for Continue Watching */}
+                                    {isPlayableCard && anime.timestamp && anime.duration && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '3px',
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            zIndex: 20
+                                        }}>
+                                            <div style={{
+                                                width: `${(anime.timestamp / anime.duration) * 100}%`,
+                                                height: '100%',
+                                                backgroundColor: 'var(--primary)', // Pink más clarito y vibrante para visibilidad
+                                            }} />
+                                        </div>
+                                    )}
+                                </div>
                                 <p style={{
                                     marginTop: '0.5rem',
                                     color: '#999',
                                     fontSize: '0.9rem',
                                     fontWeight: '500',
-                                    paddingLeft: '0.5rem' // Standard slight padding
+                                    paddingLeft: '0.5rem', // Standard slight padding
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
                                 }}>
-                                    {anime.title}
+                                    {isPlayableCard && anime.category === 'Series' && anime.season ? (
+                                        <>
+                                            <span className="font-bold text-gray-200">
+                                                T{anime.season}, E{anime.episodeNo}
+                                            </span>
+                                            {' '}
+                                            {anime.title}
+                                        </>
+                                    ) : (
+                                        anime.title
+                                    )}
                                 </p>
 
                             </div>
