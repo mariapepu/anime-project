@@ -79,7 +79,7 @@ const Navbar = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                 <Link to='/'>
                     <h1 style={{ color: 'var(--primary)', fontSize: '1.8rem', fontWeight: 'bold', cursor: 'pointer' }}>
-                        MizuPlay
+                        MIZUPLAY
                     </h1>
                 </Link>
                 {user?.email && (
@@ -143,7 +143,7 @@ const Navbar = () => {
                                     </div>
                                 ))}
                                 <div
-                                    className="p-2 text-center text-xs text-white bg-[#e50914] cursor-pointer hover:bg-red-700 font-bold"
+                                    className="p-2 text-center text-xs text-white bg-[var(--primary)] cursor-pointer hover:opacity-80 font-bold"
                                     onClick={(e) => handleSearchSubmit(e)}
                                 >
                                     View all results for "{query}"
@@ -211,7 +211,7 @@ const Navbar = () => {
                         <button className='text-white pr-4'>Sign In</button>
                     </Link>
                     <Link to='/signup'>
-                        <button className='bg-red-600 px-6 py-2 rounded cursor-pointer text-white'>
+                        <button className='bg-[var(--primary)] px-6 py-2 rounded cursor-pointer text-black'>
                             Sign Up
                         </button>
                     </Link>

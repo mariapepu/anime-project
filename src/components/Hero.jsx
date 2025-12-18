@@ -23,13 +23,13 @@ const Hero = ({ anime, onPlay }) => {
                     <div className='my-6 flex gap-4'>
                         <button
                             onClick={() => onPlay(anime)}
-                            className='bg-white text-black py-2 px-6 rounded font-bold flex items-center gap-2 hover:bg-opacity-80 transition'
+                            className='bg-[var(--primary)] text-black py-2 px-6 rounded font-bold flex items-center gap-2 hover:bg-opacity-80 transition'
                         >
                             <Play size={24} fill="black" /> Play
                         </button>
                         <button
                             onClick={() => navigate(`/title/${anime.id}`)}
-                            className='bg-gray-500/70 text-white py-2 px-6 rounded font-bold flex items-center gap-2 hover:bg-gray-500/50 transition backdrop-blur-sm'
+                            className='bg-[#9c7880]/90 text-white py-2 px-6 rounded font-bold flex items-center gap-2 hover:bg-[#8a6a72] transition backdrop-blur-sm'
                         >
                             <Info size={24} />
                             More Info

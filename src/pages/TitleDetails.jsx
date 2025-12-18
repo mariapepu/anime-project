@@ -63,13 +63,13 @@ const TitleDetails = () => {
                                 }
                                 setPlaying(true);
                             }}
-                            className="bg-white text-black px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-opacity-80 transition"
+                            className="bg-[var(--primary)] text-black px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-opacity-80 transition"
                         >
                             <Play size={24} fill="black" /> Play
                         </button>
                         <button
                             onClick={() => setInList(!inList)}
-                            className="bg-gray-600/70 text-white px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-gray-600 transition"
+                            className="bg-[#9c7880]/90 text-white px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-[#8a6a72] transition"
                         >
                             {inList ? <Check size={24} /> : <Plus size={24} />}
                             {inList ? 'In List' : 'My List'}
@@ -104,7 +104,7 @@ const TitleDetails = () => {
                                 <div>
                                     <h4 className="text-xl font-bold text-white mb-2">{anime.title}</h4>
                                     <p className="text-gray-400 text-sm mb-2">{anime.genre}</p>
-                                    <span className="text-sm font-semibold bg-red-600 px-2 py-1 rounded text-white">Full Movie</span>
+                                    <span className="text-sm font-semibold bg-[var(--primary)] px-2 py-1 rounded text-black">Full Movie</span>
                                 </div>
                             </div>
                         </div>
@@ -155,14 +155,16 @@ const TitleDetails = () => {
                 </div>
             </div>
 
-            {playing && (
-                <Player
-                    anime={anime}
-                    onClose={() => { setPlaying(false); setPlayingEpisode(null); }}
-                    videoUrl={playingEpisode?.video}
-                />
-            )}
-        </div>
+            {
+                playing && (
+                    <Player
+                        anime={anime}
+                        onClose={() => { setPlaying(false); setPlayingEpisode(null); }}
+                        videoUrl={playingEpisode?.video}
+                    />
+                )
+            }
+        </div >
     );
 };
 
