@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
 import { useAnime } from '../context/AnimeContext';
+import { db } from '../firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -11,6 +13,7 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     const [showMenu, setShowMenu] = useState(false);
+    const [userData, setUserData] = useState(null);
 
     const handleLogout = async () => {
         try {
@@ -33,6 +36,20 @@ const Navbar = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        let unsubscribe;
+        if (user?.email) {
+            unsubscribe = onSnapshot(doc(db, 'users', user.email), (doc) => {
+                if (doc.exists()) {
+                    setUserData(doc.data());
+                }
+            });
+        }
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [user]);
 
     const [showSearch, setShowSearch] = useState(false);
     const [query, setQuery] = useState('');
@@ -160,9 +177,22 @@ const Navbar = () => {
                         onMouseLeave={() => setShowMenu(false)}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                            <div style={{ width: '32px', height: '32px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#aaa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#aaa', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                                 {user.photoURL ? (
-                                    <img src={user.photoURL} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img
+                                        src={user.photoURL}
+                                        alt="Profile"
+                                        style={{
+                                            position: 'absolute',
+                                            width: `${(userData?.photoZoom || 1) * 100}%`,
+                                            height: `${(userData?.photoZoom || 1) * 100}%`,
+                                            top: `${userData?.photoPosition?.y ?? 50}%`,
+                                            left: `${userData?.photoPosition?.x ?? 50}%`,
+                                            transform: `translate(-${userData?.photoPosition?.x ?? 50}%, -${userData?.photoPosition?.y ?? 50}%)`,
+                                            objectFit: 'cover',
+                                            objectPosition: `${userData?.photoPosition?.x ?? 50}% ${userData?.photoPosition?.y ?? 50}%`
+                                        }}
+                                    />
                                 ) : (
                                     <User size={20} color="#141414" />
                                 )}
