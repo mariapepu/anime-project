@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { animeList } from '../data/anime';
+import { useAnime } from '../context/AnimeContext';
 import Navbar from '../components/Navbar';
 
 const Search = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get('q');
     const [results, setResults] = useState([]);
+    const { animeList } = useAnime();
 
     useEffect(() => {
-        if (query) {
+        if (query && animeList.length > 0) {
             const filtered = animeList.filter(anime =>
                 anime.title.toLowerCase().includes(query.toLowerCase())
             );

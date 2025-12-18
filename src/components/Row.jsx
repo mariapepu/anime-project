@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Row = ({ title, animes, onPlay }) => {
     const rowRef = useRef(null);
+    const navigate = useNavigate();
 
     const scroll = (direction) => {
         if (rowRef.current) {
@@ -65,7 +67,7 @@ const Row = ({ title, animes, onPlay }) => {
                     {animes.map((anime) => (
                         <div
                             key={anime.id}
-                            onClick={() => onPlay(anime)}
+                            onClick={() => navigate(`/title/${anime.id}`)}
                             style={{
                                 flex: '0 0 auto',
                                 width: '250px',

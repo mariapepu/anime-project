@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
-import { animeList } from '../data/anime';
+import { useAnime } from '../context/AnimeContext';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const { user, logOut } = UserAuth();
+    const { animeList } = useAnime();
     const navigate = useNavigate();
 
     const [showMenu, setShowMenu] = useState(false);
@@ -216,6 +217,16 @@ const Navbar = () => {
                     </Link>
                 </div>
             )}
+            {/* Temporary Seed Button */}
+            <button
+                onClick={async () => {
+                    const { seedDatabase } = await import('../utils/seedDatabase');
+                    seedDatabase();
+                }}
+                className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded z-[100] font-bold"
+            >
+                SEED DB
+            </button>
         </nav>
     );
 };

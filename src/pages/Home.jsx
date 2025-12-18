@@ -3,26 +3,30 @@ import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Row from '../components/Row';
 import Player from '../components/Player';
-import { featuredAnime, animeList } from '../data/anime';
 import { UserAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { useAnime } from '../context/AnimeContext';
 
 const Home = () => {
     const [playingAnime, setPlayingAnime] = useState(null);
     const [continueWatching, setContinueWatching] = useState([]);
     const { user } = UserAuth();
+    const { animeList, featuredAnime, loading } = useAnime();
 
     useEffect(() => {
         const fetchProgress = async () => {
             if (user?.email) {
                 const querySnapshot = await getDocs(collection(db, 'users', user.email, 'progress'));
-                const progressData = querySnapshot.docs.map(doc => doc.data());
+                const progressData = querySnapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    id: doc.data().animeId
+                }));
                 setContinueWatching(progressData);
             }
         };
         fetchProgress();
-    }, [user, playingAnime]); // Re-fetch when player closes
+    }, [user, playingAnime]);
 
     const handlePlay = (anime) => {
         setPlayingAnime(anime);
@@ -32,11 +36,13 @@ const Home = () => {
         setPlayingAnime(null);
     };
 
+    if (loading) return <div className="text-white pt-20 pl-10">Loading...</div>;
+
     return (
         <>
             <Navbar />
             <Hero anime={featuredAnime} onPlay={handlePlay} />
-            <div style={{ marginTop: '-150px', position: 'relative', zIndex: 10 }}>
+            <div style={{ marginTop: '-120px', position: 'relative', zIndex: 10 }}>
                 {continueWatching.length > 0 && (
                     <Row title="Continue Watching" animes={continueWatching} onPlay={handlePlay} />
                 )}

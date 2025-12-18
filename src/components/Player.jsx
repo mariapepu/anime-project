@@ -4,13 +4,16 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
 
-const Player = ({ anime, onClose }) => {
+const Player = ({ anime, onClose, videoUrl }) => {
     const videoRef = useRef(null);
     const { user } = UserAuth();
     const [savedTime, setSavedTime] = useState(null);
 
     // Handle both id (from static list) and animeId (from Firestore)
     const currentAnimeId = anime?.id || anime?.animeId;
+
+    // Use passed videoUrl (episode) or fallback to anime.video (movie)
+    const source = videoUrl || anime?.video;
 
     // Load progress when player opens
     useEffect(() => {
@@ -68,7 +71,7 @@ const Player = ({ anime, onClose }) => {
                     animeId: currentAnimeId,
                     title: anime.title,
                     image: anime.image,
-                    video: anime.video,
+                    video: videoUrl || anime.video,
                     timestamp: currentTime,
                     lastWatched: new Date(),
                     duration: duration
@@ -137,7 +140,7 @@ const Player = ({ anime, onClose }) => {
                     height: '100%',
                     maxHeight: '100vh',
                 }}
-                src={anime.video}
+                src={source}
             >
                 Your browser does not support the video tag.
             </video>

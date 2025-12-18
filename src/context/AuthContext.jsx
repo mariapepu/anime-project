@@ -13,7 +13,8 @@ import {
 const AuthContext = createContext();
 
 export function AuthContextProvider({ children }) {
-    const [user, setUser] = useState({});
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     function signUp(email, password) {
         return createUserWithEmailAndPassword(auth, email, password);
@@ -42,6 +43,7 @@ export function AuthContextProvider({ children }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
+            setLoading(false);
         });
         return () => {
             unsubscribe();
@@ -49,8 +51,14 @@ export function AuthContextProvider({ children }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ signUp, logIn, logOut, updateUserProfile, updateUserEmail, updateUserPassword, user }}>
-            {children}
+        <AuthContext.Provider value={{ signUp, logIn, logOut, updateUserProfile, updateUserEmail, updateUserPassword, user, loading }}>
+            {loading ? (
+                <div className="w-full h-screen flex items-center justify-center bg-black">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-red-600"></div>
+                </div>
+            ) : (
+                children
+            )}
         </AuthContext.Provider>
     );
 }
