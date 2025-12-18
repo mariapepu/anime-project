@@ -12,8 +12,21 @@ const Player = ({ anime, onClose, videoUrl }) => {
     // Handle both id (from static list) and animeId (from Firestore)
     const currentAnimeId = anime?.id || anime?.animeId;
 
+    // Helper to transform Google Drive "view" links into direct streaming links
+    const transformDriveUrl = (url) => {
+        if (!url) return url;
+        // Regex to find Google Drive file ID from various URL formats
+        const driveRegex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/;
+        const match = url.match(driveRegex);
+        if (match && match[1]) {
+            // Using /u/0/ and export=media which sometimes helps with large files
+            return `https://drive.google.com/u/0/uc?id=${match[1]}&export=media`;
+        }
+        return url;
+    };
+
     // Use passed videoUrl (episode) or fallback to anime.video (movie)
-    const source = videoUrl || anime?.video;
+    const source = transformDriveUrl(videoUrl || anime?.video);
 
     // Load progress when player opens
     useEffect(() => {
@@ -41,6 +54,14 @@ const Player = ({ anime, onClose, videoUrl }) => {
         };
         loadProgress();
     }, [currentAnimeId, user]);
+
+    // Handle video errors (common with Drive limits)
+    const handleVideoError = (e) => {
+        console.error("Player: Video error", e);
+        if (source?.includes('drive.google.com')) {
+            alert("Error de Google Drive: Es muy probable que el archivo sea mayor de 100MB y Google esté bloqueando la descarga directa por seguridad. Drive solo permite streaming directo en archivos pequeños.");
+        }
+    };
 
     // Effect to set time when savedTime loads (if video is already ready)
     useEffect(() => {
@@ -134,7 +155,9 @@ const Player = ({ anime, onClose, videoUrl }) => {
                 ref={videoRef}
                 controls
                 autoPlay
+                crossOrigin="anonymous"
                 onLoadedMetadata={handleLoadedMetadata}
+                onError={handleVideoError}
                 style={{
                     width: '100%',
                     height: '100%',
