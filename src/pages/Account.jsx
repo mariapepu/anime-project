@@ -19,7 +19,9 @@ const Account = () => {
     const [message, setMessage] = useState('');
     const [bannerURL, setBannerURL] = useState('');
     const [savedBanner, setSavedBanner] = useState('');
-    const [bannerPosition, setBannerPosition] = useState('center');
+    const [bannerPosition, setBannerPosition] = useState({ x: 50, y: 50 });
+    const [photoPosition, setPhotoPosition] = useState({ x: 50, y: 50 });
+    const [cropperTarget, setCropperTarget] = useState(null); // 'banner' or 'photo'
     const [myList, setMyList] = useState([]);
 
     // Fetch user data from Firestore for extra fields like bannerURL
@@ -35,8 +37,15 @@ const Account = () => {
                             setSavedBanner(data.bannerURL);
                             setBannerURL(data.bannerURL);
                         }
-                        if (data.bannerPosition) {
-                            setBannerPosition(data.bannerPosition);
+                        if (data.bannerPosition !== undefined) {
+                            if (typeof data.bannerPosition === 'number') {
+                                setBannerPosition({ x: 50, y: data.bannerPosition });
+                            } else {
+                                setBannerPosition(data.bannerPosition);
+                            }
+                        }
+                        if (data.photoPosition !== undefined) {
+                            setPhotoPosition(data.photoPosition);
                         }
                     }
                 } catch (err) {
@@ -83,12 +92,17 @@ const Account = () => {
 
             // Update Firestore for bannerURL
             const userRef = doc(db, 'users', user.email);
-            // Check if doc exists first, if not setDoc, else updateDoc
             const docSnap = await getDoc(userRef);
+            const updateData = {
+                bannerURL: bannerURL,
+                bannerPosition: bannerPosition,
+                photoPosition: photoPosition
+            };
+
             if (!docSnap.exists()) {
-                await setDoc(userRef, { bannerURL: bannerURL, bannerPosition: bannerPosition }, { merge: true });
+                await setDoc(userRef, updateData, { merge: true });
             } else {
-                await updateDoc(userRef, { bannerURL: bannerURL, bannerPosition: bannerPosition });
+                await updateDoc(userRef, updateData);
             }
             setSavedBanner(bannerURL);
 
@@ -104,13 +118,14 @@ const Account = () => {
             <Navbar />
             <div className='relative w-full h-[450px]'>
                 <img
-                    className={`w-full h-full object-cover object-${bannerPosition}`}
+                    className='w-full h-full object-cover'
                     src={savedBanner || defaultBanner}
                     alt='/'
+                    style={{ objectPosition: savedBanner ? `${bannerPosition.x}% ${bannerPosition.y}%` : 'center bottom' }}
                 />
                 <div className='absolute w-full h-full top-0 left-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent'></div>
             </div>
-            <div className='px-[4%] py-8 relative -mt-32 z-20'>
+            <div className='px-[4%] py-8 relative -mt-32 z-20 w-full max-w-[600px]'>
                 <h1 className='text-3xl md:text-5xl font-bold mb-8'>My Account</h1>
 
                 {message && <p className='p-3 bg-green-500 my-2 rounded'>{message}</p>}
@@ -121,7 +136,12 @@ const Account = () => {
                         <div className='flex items-center gap-4 mb-6'>
                             <div className='w-20 h-20 bg-gray-500 rounded overflow-hidden'>
                                 {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="Profile" className='w-full h-full object-cover' />
+                                    <img
+                                        src={user.photoURL}
+                                        alt="Profile"
+                                        className='w-full h-full object-cover'
+                                        style={{ objectPosition: `${photoPosition.x}% ${photoPosition.y}%` }}
+                                    />
                                 ) : (
                                     <div className='w-full h-full flex items-center justify-center text-2xl'>
                                         {user?.email?.[0]?.toUpperCase()}
@@ -194,6 +214,15 @@ const Account = () => {
                                     className='w-full p-3 bg-gray-700 rounded text-white'
                                     placeholder="https://example.com/photo.jpg"
                                 />
+                                {photoURL && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCropperTarget('photo')}
+                                        className="mt-2 text-sm text-[var(--primary)] hover:underline"
+                                    >
+                                        Adjust Photo Position
+                                    </button>
+                                )}
                             </div>
                             <div>
                                 <label className='block text-gray-400 text-sm mb-1'>Banner URL</label>
@@ -204,18 +233,15 @@ const Account = () => {
                                     className='w-full p-3 bg-gray-700 rounded text-white'
                                     placeholder="https://example.com/banner.jpg"
                                 />
-                            </div>
-                            <div>
-                                <label className='block text-gray-400 text-sm mb-1'>Banner Alignment</label>
-                                <select
-                                    value={bannerPosition}
-                                    onChange={(e) => setBannerPosition(e.target.value)}
-                                    className='w-full p-3 bg-gray-700 rounded text-white'
-                                >
-                                    <option value="top">Top</option>
-                                    <option value="center">Center</option>
-                                    <option value="bottom">Bottom</option>
-                                </select>
+                                {bannerURL && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setCropperTarget('banner')}
+                                        className="mt-2 text-sm text-[var(--primary)] hover:underline"
+                                    >
+                                        Adjust Banner Position
+                                    </button>
+                                )}
                             </div>
                             <div>
                                 <label className='block text-gray-400 text-sm mb-1'>Email</label>
@@ -256,6 +282,82 @@ const Account = () => {
                     </form>
                 )}
             </div>
+
+            {/* Positioning Modal */}
+            {cropperTarget && (
+                <div className='fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4'>
+                    <div className='bg-[#181818] w-full max-w-[800px] rounded-lg overflow-hidden flex flex-col'>
+                        <div className='p-4 border-b border-gray-800 flex justify-between items-center'>
+                            <h3 className='text-xl font-bold'>Adjust {cropperTarget === 'banner' ? 'Banner' : 'Photo'} Position</h3>
+                            <button onClick={() => setCropperTarget(null)} className='text-gray-400 hover:text-white'>✕</button>
+                        </div>
+                        <div className='flex-1 relative bg-black flex flex-col items-center justify-center overflow-hidden p-8'>
+                            <p className='text-sm text-gray-400 mb-4'>Drag the sliders to adjust the position</p>
+                            <div className={`relative ${cropperTarget === 'banner' ? 'w-full h-[200px]' : 'w-[200px] h-[200px] rounded-full'} border border-gray-700 overflow-hidden`}>
+                                <img
+                                    src={cropperTarget === 'banner' ? (bannerURL || defaultBanner) : (photoURL || user?.photoURL)}
+                                    alt="Preview"
+                                    className='w-full h-full object-cover'
+                                    style={{
+                                        objectPosition: cropperTarget === 'banner'
+                                            ? `${bannerPosition.x}% ${bannerPosition.y}%`
+                                            : `${photoPosition.x}% ${photoPosition.y}%`
+                                    }}
+                                />
+                                <div className={`absolute inset-0 pointer-events-none border-x-4 border-y-4 border-[var(--primary)]/30 ${cropperTarget === 'photo' ? 'rounded-full' : ''}`}></div>
+                            </div>
+
+                            <div className='mt-8 w-full max-w-[400px] flex flex-col gap-6'>
+                                <div>
+                                    <div className='flex justify-between text-xs text-gray-500 mb-1'>
+                                        <span>Horizontal</span>
+                                        <span>{cropperTarget === 'banner' ? bannerPosition.x : photoPosition.x}%</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={cropperTarget === 'banner' ? bannerPosition.x : photoPosition.x}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            if (cropperTarget === 'banner') setBannerPosition(prev => ({ ...prev, x: val }));
+                                            else setPhotoPosition(prev => ({ ...prev, x: val }));
+                                        }}
+                                        className='w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--primary)]'
+                                    />
+                                </div>
+
+                                <div>
+                                    <div className='flex justify-between text-xs text-gray-500 mb-1'>
+                                        <span>Vertical</span>
+                                        <span>{cropperTarget === 'banner' ? bannerPosition.y : photoPosition.y}%</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={cropperTarget === 'banner' ? bannerPosition.y : photoPosition.y}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            if (cropperTarget === 'banner') setBannerPosition(prev => ({ ...prev, y: val }));
+                                            else setPhotoPosition(prev => ({ ...prev, y: val }));
+                                        }}
+                                        className='w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[var(--primary)]'
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='p-4 border-t border-gray-800 flex justify-end gap-4'>
+                            <button
+                                onClick={() => setCropperTarget(null)}
+                                className='bg-[var(--primary)] text-black px-6 py-2 font-bold rounded hover:bg-opacity-80 transition'
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
