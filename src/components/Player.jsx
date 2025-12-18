@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, SkipForward, SkipBack, Home, ChevronLeft } from 'lucide-react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
 
-const Player = ({ anime, onClose, videoUrl }) => {
+const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
     const videoRef = useRef(null);
     const { user } = UserAuth();
     const [savedTime, setSavedTime] = useState(null);
+    const [currentVideoSource, setCurrentVideoSource] = useState(initialVideoUrl || anime?.video);
+    const [currentEpInfo, setCurrentEpInfo] = useState(null);
+    const [showEndOverlay, setShowEndOverlay] = useState(false);
 
     // Handle both id (from static list) and animeId (from Firestore)
     const currentAnimeId = anime?.id || anime?.animeId;
@@ -15,153 +18,149 @@ const Player = ({ anime, onClose, videoUrl }) => {
     // Helper to transform Google Drive "view" links into direct streaming links
     const transformDriveUrl = (url) => {
         if (!url) return url;
-        // Regex to find Google Drive file ID from various URL formats
         const driveRegex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/;
         const match = url.match(driveRegex);
         if (match && match[1]) {
-            // Using /u/0/ and export=media which sometimes helps with large files
             return `https://drive.google.com/u/0/uc?id=${match[1]}&export=media`;
         }
         return url;
     };
 
-    // Use passed videoUrl (episode) or fallback to anime.video (movie)
-    const source = transformDriveUrl(videoUrl || anime?.video);
-
-    // Load progress when player opens
+    // Find current episode info in anime data
     useEffect(() => {
-        const loadProgress = async () => {
-            console.log("Player: Loading progress for", currentAnimeId);
-            if (user?.email && currentAnimeId) {
-                const docRef = doc(db, 'users', user.email, 'progress', currentAnimeId.toString());
-                try {
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        console.log("Player: Found progress", data);
-                        if (data.timestamp) {
-                            const newTime = Math.max(0, data.timestamp - 5);
-                            console.log("Player: Setting savedTime to", newTime);
-                            setSavedTime(newTime);
-                        }
-                    } else {
-                        console.log("Player: No progress found");
-                    }
-                } catch (error) {
-                    console.error("Player: Error loading progress", error);
+        if (anime.category === 'Series' && anime.seasons) {
+            for (let s of anime.seasons) {
+                const ep = s.episodes.find(e => e.video === currentVideoSource);
+                if (ep) {
+                    setCurrentEpInfo({ ...ep, season: s.season });
+                    return;
                 }
             }
-        };
-        loadProgress();
-    }, [currentAnimeId, user]);
+        }
+        setCurrentEpInfo(null);
+    }, [currentVideoSource, anime]);
 
-    // Handle video errors (common with Drive limits)
-    const handleVideoError = (e) => {
-        console.error("Player: Video error", e);
-        if (source?.includes('drive.google.com')) {
-            alert("Error de Google Drive: Es muy probable que el archivo sea mayor de 100MB y Google esté bloqueando la descarga directa por seguridad. Drive solo permite streaming directo en archivos pequeños.");
+    // Load progress for current anime
+    const loadProgress = async () => {
+        if (user?.email && currentAnimeId) {
+            const docRef = doc(db, 'users', user.email, 'progress', currentAnimeId.toString());
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // If the saved video matches current source, seek to timestamp
+                    if (data.video === currentVideoSource && data.timestamp) {
+                        const newTime = Math.max(0, data.timestamp - 5);
+                        setSavedTime(newTime);
+                    } else {
+                        setSavedTime(0);
+                    }
+                } else {
+                    setSavedTime(0);
+                }
+            } catch (error) {
+                console.error("Player: Error loading progress", error);
+            }
         }
     };
 
-    // Effect to set time when savedTime loads (if video is already ready)
     useEffect(() => {
-        if (savedTime !== null && videoRef.current && videoRef.current.readyState >= 1) {
-            console.log("Player: Seeking to savedTime (useEffect)", savedTime);
-            videoRef.current.currentTime = savedTime;
-        }
-    }, [savedTime]);
-
-    // Handle when video metadata loads (if savedTime is already loaded)
-    const handleLoadedMetadata = () => {
-        console.log("Player: Metadata loaded");
-        if (videoRef.current && savedTime !== null) {
-            console.log("Player: Seeking to savedTime (onLoadedMetadata)", savedTime);
-            videoRef.current.currentTime = savedTime;
-        }
-    };
+        loadProgress();
+    }, [currentAnimeId, user, currentVideoSource]);
 
     // Save progress function
     const saveProgress = async () => {
         if (user?.email && currentAnimeId && videoRef.current) {
             const currentTime = videoRef.current.currentTime;
             const duration = videoRef.current.duration;
-            const progressPercent = (currentTime / duration) * 100;
-
-            console.log(`Player: Saving progress ${currentTime}/${duration} (${progressPercent.toFixed(1)}%)`);
+            if (isNaN(duration)) return;
 
             try {
-                // Find current episode and season info for Series
-                let currentSeason = 1;
-                let currentEpNo = 1;
-                let currentEpTitle = anime.title;
-                let nextEpisode = null;
-
-                if (anime.category === 'Series' && anime.seasons) {
-                    // Try to find current episode index based on videoUrl
-                    for (let s of anime.seasons) {
-                        const epIndex = s.episodes.findIndex(ep => ep.video === (videoUrl || anime.video));
-                        if (epIndex !== -1) {
-                            currentSeason = s.season;
-                            currentEpNo = s.episodes[epIndex].id;
-                            currentEpTitle = s.episodes[epIndex].title;
-
-                            // Progress to next episode if near end (>95%)
-                            if (progressPercent > 95) {
-                                if (epIndex < s.episodes.length - 1) {
-                                    // Next in same season
-                                    nextEpisode = { ...s.episodes[epIndex + 1], season: s.season };
-                                } else {
-                                    // Try next season
-                                    const nextSeasonIndex = anime.seasons.findIndex(sec => sec.season === s.season + 1);
-                                    if (nextSeasonIndex !== -1 && anime.seasons[nextSeasonIndex].episodes.length > 0) {
-                                        nextEpisode = { ...anime.seasons[nextSeasonIndex].episodes[0], season: s.season + 1 };
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                // If finished and has next, save NEXT episode with 0 progress
-                const finished = progressPercent > 95;
-
                 await setDoc(doc(db, 'users', user.email, 'progress', currentAnimeId.toString()), {
                     animeId: currentAnimeId,
-                    title: nextEpisode ? nextEpisode.title : currentEpTitle,
+                    title: currentEpInfo ? currentEpInfo.title : anime.title,
                     image: anime.image,
-                    video: nextEpisode ? nextEpisode.video : (videoUrl || anime.video),
-                    timestamp: nextEpisode ? 0 : currentTime, // Reset for next ep
+                    video: currentVideoSource,
+                    timestamp: currentTime,
                     lastWatched: new Date(),
-                    duration: nextEpisode ? 0 : duration, // Will update when played
+                    duration: duration,
                     category: anime.category,
-                    season: nextEpisode ? nextEpisode.season : currentSeason,
-                    episodeNo: nextEpisode ? nextEpisode.id : currentEpNo,
-                    animeTitle: anime.title // Full series title
+                    season: currentEpInfo ? currentEpInfo.season : 1,
+                    episodeNo: currentEpInfo ? currentEpInfo.id : 1,
+                    animeTitle: anime.title
                 });
-                console.log("Player: Progress saved successfully", nextEpisode ? " (Advanced to Next Ep)" : "");
             } catch (error) {
                 console.error("Player: Error saving progress", error);
             }
         }
     };
 
-    // Handle close button click
+    // Auto-save every 10 seconds
+    useEffect(() => {
+        const interval = setInterval(saveProgress, 10000);
+        return () => clearInterval(interval);
+    }, [currentAnimeId, user, currentVideoSource, currentEpInfo]);
+
+    // Handle next/prev logic
+    const navigateEpisode = (direction) => {
+        if (anime.category !== 'Series' || !anime.seasons) return;
+
+        let found = false;
+        for (let sIndex = 0; sIndex < anime.seasons.length; sIndex++) {
+            const s = anime.seasons[sIndex];
+            const epIndex = s.episodes.findIndex(ep => ep.video === currentVideoSource);
+
+            if (epIndex !== -1) {
+                found = true;
+                if (direction === 'next') {
+                    if (epIndex < s.episodes.length - 1) {
+                        // Next ep same season
+                        saveProgress();
+                        setCurrentVideoSource(s.episodes[epIndex + 1].video);
+                    } else if (sIndex < anime.seasons.length - 1) {
+                        // First ep next season
+                        saveProgress();
+                        setCurrentVideoSource(anime.seasons[sIndex + 1].episodes[0].video);
+                    } else {
+                        // End of series
+                        saveProgress();
+                        setShowEndOverlay(true);
+                    }
+                } else { // prev
+                    if (epIndex > 0) {
+                        saveProgress();
+                        setCurrentVideoSource(s.episodes[epIndex - 1].video);
+                    } else if (sIndex > 0) {
+                        // Last ep prev season
+                        saveProgress();
+                        const prevS = anime.seasons[sIndex - 1];
+                        setCurrentVideoSource(prevS.episodes[prevS.episodes.length - 1].video);
+                    }
+                }
+                break;
+            }
+        }
+    };
+
+    const handleVideoEnd = () => {
+        if (anime.category === 'Series') {
+            navigateEpisode('next');
+        } else {
+            setShowEndOverlay(true);
+        }
+    };
+
     const handleClose = async () => {
-        console.log("Player: Close button clicked");
         await saveProgress();
         onClose();
     };
 
-    // Save progress every 5 seconds
+    // Seek logic
     useEffect(() => {
-        const interval = setInterval(() => {
-            console.log("Player: Auto-saving...");
-            saveProgress();
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, [currentAnimeId, user, anime]);
+        if (savedTime !== null && videoRef.current) {
+            videoRef.current.currentTime = savedTime;
+        }
+    }, [savedTime]);
 
     if (!anime) return null;
 
@@ -178,37 +177,170 @@ const Player = ({ anime, onClose, videoUrl }) => {
             alignItems: 'center',
             justifyContent: 'center',
         }}>
-            <button
-                onClick={handleClose}
-                style={{
-                    position: 'absolute',
-                    top: '2rem',
-                    right: '2rem',
-                    background: 'transparent',
-                    color: 'white',
-                    zIndex: 101,
-                    cursor: 'pointer'
-                }}
-            >
-                <X size={40} />
-            </button>
+            {/* Header Controls */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                padding: '2rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)',
+                zIndex: 110
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button onClick={handleClose} style={{ background: 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}>
+                        <ChevronLeft size={40} />
+                    </button>
+                    <div>
+                        <h2 style={{ color: 'white', fontSize: '1.2rem', margin: 0 }}>{anime.title}</h2>
+                        {currentEpInfo && (
+                            <p style={{ color: '#ccc', margin: 0, fontSize: '0.9rem' }}>
+                                Season {currentEpInfo.season}, Episode {currentEpInfo.id}: {currentEpInfo.title}
+                            </p>
+                        )}
+                    </div>
+                </div>
+                <button
+                    onClick={handleClose}
+                    style={{ background: 'transparent', color: 'white', border: 'none', cursor: 'pointer' }}
+                >
+                    <X size={40} />
+                </button>
+            </div>
 
+            {/* Video Player */}
             <video
                 ref={videoRef}
                 controls
                 autoPlay
                 crossOrigin="anonymous"
-                onLoadedMetadata={handleLoadedMetadata}
-                onError={handleVideoError}
-                style={{
+                onLoadedMetadata={() => { if (savedTime !== null) videoRef.current.currentTime = savedTime; }}
+                onEnded={handleVideoEnd}
+                style={{ width: '100%', height: '100%', maxHeight: '100vh' }}
+                src={transformDriveUrl(currentVideoSource)}
+            />
+
+            {/* Overlay Navigation Controls (on hover) */}
+            <div className="player-nav-container" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                zIndex: 105,
+                pointerEvents: 'none'
+            }}>
+                {anime.category === 'Series' && (
+                    <>
+                        <button
+                            onClick={() => navigateEpisode('prev')}
+                            style={{
+                                position: 'absolute',
+                                left: '4rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                pointerEvents: 'auto',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: 'none',
+                                color: 'white',
+                                borderRadius: '50%',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                opacity: 0
+                            }}
+                            className="nav-btn"
+                        >
+                            <SkipBack size={40} />
+                        </button>
+                        <button
+                            onClick={() => navigateEpisode('next')}
+                            style={{
+                                position: 'absolute',
+                                right: '4rem',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                pointerEvents: 'auto',
+                                background: 'rgba(0,0,0,0.4)',
+                                border: 'none',
+                                color: 'white',
+                                borderRadius: '50%',
+                                padding: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                opacity: 0
+                            }}
+                            className="nav-btn"
+                        >
+                            <SkipForward size={40} />
+                        </button>
+                    </>
+                )}
+            </div>
+
+            {/* End Screen Overlay */}
+            {showEndOverlay && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
                     width: '100%',
                     height: '100%',
-                    maxHeight: '100vh',
-                }}
-                src={source}
-            >
-                Your browser does not support the video tag.
-            </video>
+                    backgroundColor: 'rgba(0,0,0,0.9)',
+                    zIndex: 120,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    color: 'white',
+                    padding: '2rem'
+                }}>
+                    <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+                        {anime.category === 'Series' ? '¡Has terminado la serie!' : '¡Fin de la película!'}
+                    </h1>
+                    <p style={{ fontSize: '1.2rem', color: '#999', marginBottom: '3rem' }}>
+                        {anime.category === 'Series'
+                            ? 'No hay más capítulos disponibles por ahora.'
+                            : 'Esperamos que hayas disfrutado de la película.'}
+                    </p>
+                    <button
+                        onClick={handleClose}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1rem',
+                            backgroundColor: 'white',
+                            color: 'black',
+                            padding: '1rem 2.5rem',
+                            borderRadius: '4px',
+                            fontSize: '1.2rem',
+                            fontWeight: 'bold',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        <Home size={24} />
+                        Volver al inicio
+                    </button>
+                </div>
+            )}
+
+            <style>{`
+                .player-nav-container:hover .nav-btn {
+                    opacity: 1 !important;
+                }
+                .nav-btn:hover {
+                    background: rgba(255,255,255,0.2) !important;
+                    transform: scale(1.1) translateY(-50%) !important;
+                }
+            `}</style>
         </div>
     );
 };
