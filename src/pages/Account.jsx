@@ -19,6 +19,7 @@ const Account = () => {
     const [message, setMessage] = useState('');
     const [bannerURL, setBannerURL] = useState('');
     const [savedBanner, setSavedBanner] = useState('');
+    const [bannerPosition, setBannerPosition] = useState('center');
     const [myList, setMyList] = useState([]);
 
     // Fetch user data from Firestore for extra fields like bannerURL
@@ -33,6 +34,9 @@ const Account = () => {
                         if (data.bannerURL) {
                             setSavedBanner(data.bannerURL);
                             setBannerURL(data.bannerURL);
+                        }
+                        if (data.bannerPosition) {
+                            setBannerPosition(data.bannerPosition);
                         }
                     }
                 } catch (err) {
@@ -82,9 +86,9 @@ const Account = () => {
             // Check if doc exists first, if not setDoc, else updateDoc
             const docSnap = await getDoc(userRef);
             if (!docSnap.exists()) {
-                await setDoc(userRef, { bannerURL: bannerURL }, { merge: true });
+                await setDoc(userRef, { bannerURL: bannerURL, bannerPosition: bannerPosition }, { merge: true });
             } else {
-                await updateDoc(userRef, { bannerURL: bannerURL });
+                await updateDoc(userRef, { bannerURL: bannerURL, bannerPosition: bannerPosition });
             }
             setSavedBanner(bannerURL);
 
@@ -100,7 +104,7 @@ const Account = () => {
             <Navbar />
             <div className='relative w-full h-[450px]'>
                 <img
-                    className='w-full h-full object-cover object-bottom'
+                    className={`w-full h-full object-cover object-${bannerPosition}`}
                     src={savedBanner || defaultBanner}
                     alt='/'
                 />
@@ -200,6 +204,18 @@ const Account = () => {
                                     className='w-full p-3 bg-gray-700 rounded text-white'
                                     placeholder="https://example.com/banner.jpg"
                                 />
+                            </div>
+                            <div>
+                                <label className='block text-gray-400 text-sm mb-1'>Banner Alignment</label>
+                                <select
+                                    value={bannerPosition}
+                                    onChange={(e) => setBannerPosition(e.target.value)}
+                                    className='w-full p-3 bg-gray-700 rounded text-white'
+                                >
+                                    <option value="top">Top</option>
+                                    <option value="center">Center</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
                             </div>
                             <div>
                                 <label className='block text-gray-400 text-sm mb-1'>Email</label>
