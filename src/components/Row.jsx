@@ -82,11 +82,11 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                     style={{
                                         position: 'absolute',
                                         left: '-2.5rem',
-                                        bottom: '30px', // Higher to clear title
+                                        bottom: '31px', // Higher to clear title
                                         zIndex: 20,
                                         fontSize: '8rem',
                                         fontWeight: '900',
-                                        background: 'linear-gradient(to right, rgba(20, 20, 20, 1) 30%, rgba(20, 20, 20, 0.4) 100%)',
+                                        background: 'linear-gradient(to right, rgba(20, 20, 20, 1) 65%, rgba(20, 20, 20, 0.5) 100%)',
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         WebkitTextStroke: '2px #FFB6C1',
