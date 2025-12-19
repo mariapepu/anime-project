@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Bell, User } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ const Navbar = () => {
 
     const [showMenu, setShowMenu] = useState(false);
     const [userData, setUserData] = useState(null);
+    const searchRef = useRef(null);
 
     const handleLogout = async () => {
         try {
@@ -35,6 +36,20 @@ const Navbar = () => {
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Click outside to close search
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowSearch(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
     }, []);
 
     useEffect(() => {
@@ -114,37 +129,43 @@ const Navbar = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: 'white' }}>
 
                     {/* Search Component */}
-                    <div className="relative flex items-center">
-                        <div className={`flex items-center border border-white bg-black/80 transition-all duration-300 ${showSearch ? 'w-[200px] md:w-[250px] p-1' : 'w-0 border-0 bg-transparent overflow-hidden'}`}>
-                            <Search size={20} className="ml-1 min-w-[20px]" />
+                    <div className="relative flex items-center h-[32px]" ref={searchRef}>
+                        <div
+                            className={`flex items-center bg-[var(--background)] transition-all duration-300 rounded-[4px] overflow-hidden ${showSearch ? 'w-[200px] md:w-[250px] h-full px-2' : 'w-0 h-full'}`}
+                        >
                             <form onSubmit={handleSearchSubmit} className="w-full">
                                 <input
                                     type="text"
-                                    className="bg-transparent border-none text-white focus:outline-none pl-2 text-sm w-full"
+                                    className="bg-transparent border-none text-white focus:outline-none pl-2 text-sm w-full placeholder:text-gray-500"
                                     placeholder="Titles, people, genres"
                                     value={query}
                                     onChange={handleSearch}
-                                    style={{
-                                        // Force color white to override browser autofill styles
-                                        color: 'white'
-                                    }}
                                 />
                             </form>
                             {query && (
-                                <span className="cursor-pointer text-xs px-2" onClick={() => { setQuery(''); setSearchResults([]); }}>X</span>
+                                <span className="cursor-pointer text-xs px-2 text-gray-400 hover:text-white" onClick={() => { setQuery(''); setSearchResults([]); }}>X</span>
                             )}
+                            <Search
+                                size={18}
+                                className="min-w-[18px] cursor-pointer text-gray-400"
+                                onClick={() => setShowSearch(false)}
+                            />
                         </div>
                         {!showSearch && (
-                            <Search size={20} style={{ cursor: 'pointer' }} onClick={() => setShowSearch(true)} />
+                            <Search
+                                size={20}
+                                className="cursor-pointer hover:text-gray-400 transition-colors"
+                                onClick={() => setShowSearch(true)}
+                            />
                         )}
 
                         {/* Autocomplete Dropdown */}
                         {searchResults.length > 0 && showSearch && (
-                            <div className="absolute top-10 right-0 w-[250px] bg-[#141414] border border-[#333] shadow-xl max-h-[300px] overflow-y-auto rounded z-50">
+                            <div className="absolute top-10 right-0 w-[300px] bg-[var(--background)] shadow-2xl max-h-[350px] overflow-y-auto rounded z-50">
                                 {searchResults.map(result => (
                                     <div
                                         key={result.id}
-                                        className="flex items-center gap-3 p-3 hover:bg-[#333] cursor-pointer border-b border-[#222]"
+                                        className="flex items-center gap-3 p-3 cursor-pointer border-b border-white/5"
                                         onClick={() => {
                                             navigate(`/title/${result.id}`);
                                             setShowSearch(false);
@@ -152,15 +173,15 @@ const Navbar = () => {
                                             setSearchResults([]);
                                         }}
                                     >
-                                        <img src={result.image} alt={result.title} className="w-10 h-14 object-cover rounded" />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold truncate">{result.title}</p>
+                                        <img src={result.image} alt={result.title} className="w-10 h-14 min-w-[40px] object-cover rounded" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold leading-tight mb-1">{result.title}</p>
                                             <p className="text-xs text-gray-400">{result.category}</p>
                                         </div>
                                     </div>
                                 ))}
                                 <div
-                                    className="p-2 text-center text-xs text-white bg-[var(--primary)] cursor-pointer hover:opacity-80 font-bold"
+                                    className="p-2 text-center text-xs text-[#141414] bg-[var(--primary)] cursor-pointer hover:opacity-90 font-bold"
                                     onClick={(e) => handleSearchSubmit(e)}
                                 >
                                     View all results for "{query}"
