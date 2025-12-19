@@ -85,15 +85,15 @@ const Hero = ({ animes = [], onPlay }) => {
                 <>
                     <button
                         onClick={handlePrev}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/20 hover:bg-black/50 transition-colors hidden md:block"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-1 rounded-full hover:bg-black/40 transition-all hidden md:block text-white/20 hover:text-white"
                     >
-                        <ChevronLeft size={40} />
+                        <ChevronLeft size={44} />
                     </button>
                     <button
                         onClick={handleNext}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/20 hover:bg-black/50 transition-colors hidden md:block"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-1 rounded-full hover:bg-black/40 transition-all hidden md:block text-white/20 hover:text-white"
                     >
-                        <ChevronRight size={40} />
+                        <ChevronRight size={44} />
                     </button>
 
                     {/* Dots */}
