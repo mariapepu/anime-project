@@ -8,7 +8,7 @@ export function AnimeContextProvider({ children }) {
     const [animeList, setAnimeList] = useState([]);
     const [trendingList, setTrendingList] = useState([]);
     const [newReleasesList, setNewReleasesList] = useState([]);
-    const [featuredAnime, setFeaturedAnime] = useState(null);
+    const [featuredList, setFeaturedList] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -70,8 +70,8 @@ export function AnimeContextProvider({ children }) {
                 setNewReleasesList(newReleases);
 
                 // 5. Find featured from list or fallback to first
-                const featuredItem = list.find(item => item.featured === true);
-                setFeaturedAnime(featuredItem || list[0]);
+                const featuredItems = list.filter(item => item.featured === true);
+                setFeaturedList(featuredItems.length > 0 ? featuredItems : [list[0]]);
             } catch (error) {
                 console.error("Error fetching anime data:", error);
             } finally {
@@ -83,7 +83,7 @@ export function AnimeContextProvider({ children }) {
     }, []);
 
     return (
-        <AnimeContext.Provider value={{ animeList, trendingList, newReleasesList, featuredAnime, loading }}>
+        <AnimeContext.Provider value={{ animeList, trendingList, newReleasesList, featuredList, loading }}>
             {children}
         </AnimeContext.Provider>
     );
