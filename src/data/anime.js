@@ -12,7 +12,13 @@ export const animeList = [
                 episodes: [
                     { id: 1, title: "A Tiny Happenstance", duration: "23m", video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" },
                     { id: 2, title: "You Wear More Than One Face", duration: "23m", video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" },
-                    { id: 3, title: "That's Why It's Okay", duration: "23m", video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" }
+                ]
+            },
+            {
+                season: 2,
+                episodes: [
+                    { id: 1, title: "The Missing Piece Episode 1", duration: "23m", video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" },
+                    { id: 2, title: "The Missing Piece Episode 2", duration: "23m", video: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" }
                 ]
             }
         ]

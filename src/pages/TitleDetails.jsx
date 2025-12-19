@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAnime } from '../context/AnimeContext';
 import Navbar from '../components/Navbar';
 import Player from '../components/Player';
-import { Play, Plus, Check } from 'lucide-react';
+import { Play, Plus, Check, ChevronDown } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { UserAuth } from '../context/AuthContext';
@@ -16,6 +16,7 @@ const TitleDetails = () => {
     const [playing, setPlaying] = useState(false);
     const [playingEpisode, setPlayingEpisode] = useState(null);
     const [inList, setInList] = useState(false);
+    const [selectedSeason, setSelectedSeason] = useState(1);
 
     useEffect(() => {
         if (!animeList || animeList.length === 0) return;
@@ -96,8 +97,11 @@ const TitleDetails = () => {
                             onClick={() => {
                                 if (anime.category === 'Movie') {
                                     setPlayingEpisode(null); // Will use anime.video
-                                } else if (anime.seasons && anime.seasons[0]?.episodes[0]) {
-                                    setPlayingEpisode(anime.seasons[0].episodes[0]);
+                                } else if (anime.seasons) {
+                                    const seasonData = anime.seasons.find(s => s.season === selectedSeason) || anime.seasons[0];
+                                    if (seasonData.episodes[0]) {
+                                        setPlayingEpisode(seasonData.episodes[0]);
+                                    }
                                 }
                                 setPlaying(true);
                             }}
@@ -121,7 +125,7 @@ const TitleDetails = () => {
             </div>
 
             {/* Episodes & Info Section */}
-            <div className="px-[4%] py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="px-[4%] pt-6 pb-10 grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Episodes Column */}
                 <div className="md:col-span-2">
                     {anime.category === 'Movie' ? (
@@ -148,13 +152,35 @@ const TitleDetails = () => {
                         </div>
                     ) : (anime.seasons ? (
                         <>
-                            <div className="flex justify-between items-end mb-6 border-b border-gray-700 pb-2">
+                            {/* Season Selector */}
+                            <div className="mb-8 relative inline-block group">
+                                <div className="relative">
+                                    <select
+                                        className="appearance-none bg-[#242424] text-white rounded px-4 py-2 pr-10 text-lg font-bold focus:outline-none cursor-pointer min-w-[160px] hover:bg-[#333] transition-colors"
+                                        value={selectedSeason}
+                                        onChange={(e) => setSelectedSeason(parseInt(e.target.value))}
+                                    >
+                                        {anime.seasons.map(s => (
+                                            <option key={s.season} value={s.season}>
+                                                Season {s.season}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-white">
+                                        <ChevronDown size={20} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-2">
                                 <h3 className="text-2xl font-bold">Episodes</h3>
-                                <span className="text-lg text-gray-400">{anime.seasons.length} Season{anime.seasons.length > 1 ? 's' : ''}</span>
+                                <span className="text-lg text-gray-400">
+                                    {anime.seasons.find(s => s.season === selectedSeason)?.episodes.length || 0} Episodes
+                                </span>
                             </div>
 
                             <div className="space-y-4">
-                                {anime.seasons[0].episodes.map((ep) => (
+                                {(anime.seasons.find(s => s.season === selectedSeason)?.episodes || []).map((ep) => (
                                     <div key={ep.id} className="flex items-center gap-4 p-4 hover:bg-[#333] rounded cursor-pointer transition group" onClick={() => { setPlayingEpisode(ep); setPlaying(true); }}>
                                         <span className="text-2xl text-gray-500 font-bold w-6">{ep.id}</span>
                                         <div className="relative w-32 h-20 bg-gray-700 rounded overflow-hidden flex-shrink-0">

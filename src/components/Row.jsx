@@ -103,7 +103,9 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                         borderRadius: '2px', // Esquinas más rectas/profesionales
                                         zIndex: 30,
                                         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)', // Sombra con profundidad natural
-                                        letterSpacing: '0.2px'
+                                        letterSpacing: '0.2px',
+                                        textTransform: 'uppercase',
+                                        fontFamily: 'var(--font-main)'
                                     }}>
                                         New
                                     </div>
@@ -121,7 +123,9 @@ const Row = ({ title, animes, onPlay, isPlayableCard, showRank }) => {
                                         borderRadius: '2px',
                                         zIndex: 30,
                                         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
-                                        letterSpacing: '0.2px'
+                                        letterSpacing: '0.2px',
+                                        textTransform: 'uppercase',
+                                        fontFamily: 'var(--font-main)'
                                     }}>
                                         New epis.
                                     </div>

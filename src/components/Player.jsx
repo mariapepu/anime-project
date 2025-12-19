@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, SkipForward, SkipBack, Home, ChevronLeft } from 'lucide-react';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
 
@@ -70,6 +70,7 @@ const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
 
     // Save progress function
     const saveProgress = async () => {
+        if (showEndOverlay) return; // Don't save if already finished
         if (user?.email && currentAnimeId && videoRef.current) {
             const currentTime = videoRef.current.currentTime;
             const duration = videoRef.current.duration;
@@ -91,6 +92,19 @@ const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
                 });
             } catch (error) {
                 console.error("Player: Error saving progress", error);
+            }
+        }
+    };
+
+    // Clear progress when finished
+    const clearProgress = async () => {
+        if (user?.email && currentAnimeId) {
+            const docRef = doc(db, 'users', user.email, 'progress', currentAnimeId.toString());
+            try {
+                await deleteDoc(docRef);
+                console.log("Player: Progress cleared for", currentAnimeId);
+            } catch (error) {
+                console.error("Player: Error clearing progress", error);
             }
         }
     };
@@ -124,6 +138,7 @@ const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
                     } else {
                         // End of series
                         saveProgress();
+                        clearProgress();
                         setShowEndOverlay(true);
                     }
                 } else { // prev
@@ -146,12 +161,15 @@ const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
         if (anime.category === 'Series') {
             navigateEpisode('next');
         } else {
+            clearProgress();
             setShowEndOverlay(true);
         }
     };
 
     const handleClose = async () => {
-        await saveProgress();
+        if (!showEndOverlay) {
+            await saveProgress();
+        }
         onClose();
     };
 
