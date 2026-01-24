@@ -17,12 +17,17 @@ const Home = () => {
     useEffect(() => {
         const fetchProgress = async () => {
             if (user?.email) {
-                const querySnapshot = await getDocs(collection(db, 'users', user.email, 'progress'));
-                const progressData = querySnapshot.docs.map(doc => ({
-                    ...doc.data(),
-                    id: doc.data().animeId
-                }));
-                setContinueWatching(progressData);
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'users', user.email, 'progress'));
+                    const progressData = querySnapshot.docs.map(doc => ({
+                        ...doc.data(),
+                        id: doc.data().animeId
+                    }));
+                    setContinueWatching(progressData);
+                } catch (err) {
+                    console.warn("Home: Error fetching progress (check permissions)", err);
+                    setContinueWatching([]);
+                }
             }
         };
         fetchProgress();

@@ -11,7 +11,7 @@ import { UserAuth } from '../context/AuthContext';
 const TitleDetails = () => {
     const { id } = useParams();
     const { user } = UserAuth();
-    const { animeList, featuredAnime } = useAnime();
+    const { animeList, featuredList, loading: animeLoading } = useAnime();
     const [anime, setAnime] = useState(null);
     const [playing, setPlaying] = useState(false);
     const [playingEpisode, setPlayingEpisode] = useState(null);
@@ -21,12 +21,12 @@ const TitleDetails = () => {
     useEffect(() => {
         if (!animeList || animeList.length === 0) return;
 
-        // Find in regular list or check if it matches featured ID
+        // Find in regular list or check if it matches first item of featuredList
         const found = animeList.find(item => item.id.toString() === id);
         if (found) {
             setAnime(found);
-        } else if (featuredAnime && featuredAnime.id.toString() === id) {
-            setAnime(featuredAnime);
+        } else if (featuredList && featuredList[0] && featuredList[0].id.toString() === id) {
+            setAnime(featuredList[0]);
         }
         window.scrollTo(0, 0);
 
@@ -44,7 +44,7 @@ const TitleDetails = () => {
         }
         checkList();
 
-    }, [id, animeList, featuredAnime, user]);
+    }, [id, animeList, featuredList, user]);
 
     const toggleList = async () => {
         if (!user?.email || !anime) return;
@@ -65,7 +65,15 @@ const TitleDetails = () => {
         }
     };
 
-    if (!anime) return <div className="text-white pt-20">Loading...</div>;
+    if (animeLoading) return <div className="text-white pt-24 pl-[4%]">Loading anime data...</div>;
+
+    if (!anime) return (
+        <div className="text-white pt-24 pl-[4%]">
+            <h2 className="text-2xl font-bold mb-4">Anime not found</h2>
+            <p className="text-gray-400 mb-6">We couldn't find the title you're looking for.</p>
+            <Link to="/" className="bg-[var(--primary)] text-black px-6 py-2 rounded font-bold">Go back Home</Link>
+        </div>
+    );
 
     return (
         <div className="bg-[#141414] min-h-screen text-white">

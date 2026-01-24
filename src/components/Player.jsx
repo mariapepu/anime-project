@@ -3,10 +3,13 @@ import { X, SkipForward, SkipBack, Home, ChevronLeft } from 'lucide-react';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
+import { useAnime } from '../context/AnimeContext';
+import { buildVideoUrl } from '../utils/urlHelper';
 
 const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
     const videoRef = useRef(null);
     const { user } = UserAuth();
+    const { baseVideoUrl } = useAnime();
     const [savedTime, setSavedTime] = useState(null);
     const [currentVideoSource, setCurrentVideoSource] = useState(initialVideoUrl || anime?.video);
     const [currentEpInfo, setCurrentEpInfo] = useState(null);
@@ -238,7 +241,7 @@ const Player = ({ anime, onClose, videoUrl: initialVideoUrl }) => {
                 onLoadedMetadata={() => { if (savedTime !== null) videoRef.current.currentTime = savedTime; }}
                 onEnded={handleVideoEnd}
                 style={{ width: '100%', height: '100%', maxHeight: '100vh' }}
-                src={transformDriveUrl(currentVideoSource)}
+                src={transformDriveUrl(buildVideoUrl(currentVideoSource, baseVideoUrl))}
             />
 
             {/* Overlay Navigation Controls (on hover) */}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { UserAuth } from '../context/AuthContext';
+import { useAnime } from '../context/AnimeContext';
 import Navbar from '../components/Navbar';
 
 const Admin = () => {
@@ -33,6 +34,14 @@ const Admin = () => {
         videoUrl: '',
         duration: '24m'
     });
+
+    const { baseVideoUrl, setBaseVideoUrl } = useAnime();
+    const [newBaseUrl, setNewBaseUrl] = useState(baseVideoUrl);
+
+    // Sync local state when base URL is fetched from context
+    useEffect(() => {
+        setNewBaseUrl(baseVideoUrl);
+    }, [baseVideoUrl]);
 
     const [message, setMessage] = useState('');
 
@@ -119,6 +128,20 @@ const Admin = () => {
         }
     };
 
+    const handleSettingsSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('Actualizando configuración...');
+        try {
+            await setDoc(doc(db, 'settings', 'config'), {
+                baseVideoUrl: newBaseUrl
+            }, { merge: true });
+            setBaseVideoUrl(newBaseUrl);
+            setMessage('¡Configuración actualizada con éxito!');
+        } catch (error) {
+            setMessage('Error: ' + error.message);
+        }
+    };
+
     return (
         <div className="bg-[#141414] min-h-screen text-white">
             <Navbar />
@@ -126,10 +149,30 @@ const Admin = () => {
                 <h1 className="text-3xl font-bold mb-8 text-[var(--primary)]">Panel de Administrador</h1>
 
                 {message && (
-                    <div className="bg-blue-600/20 border border-blue-500 p-4 rounded mb-8 text-center">
+                    <div className="bg-blue-600/20 border border-blue-500 p-4 rounded mb-8 text-center animate-pulse">
                         {message}
                     </div>
                 )}
+
+                {/* Global Settings Section */}
+                <section className="bg-[#222] p-6 rounded-lg border border-pink-500/30 mb-12 shadow-lg shadow-pink-500/5">
+                    <h2 className="text-xl font-bold mb-4 text-pink-400">Configuración Global</h2>
+                    <form onSubmit={handleSettingsSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-1">URL Base de Vídeo (Ej: https://tudominio.trycloudflare.com)</label>
+                            <input
+                                type="text"
+                                value={newBaseUrl}
+                                onChange={(e) => setNewBaseUrl(e.target.value)}
+                                className="w-full bg-[#333] p-2 rounded border border-gray-700 focus:border-pink-500 outline-none"
+                                placeholder="Pega aquí la parte amarilla de la URL"
+                            />
+                        </div>
+                        <button type="submit" className="bg-pink-600 text-white px-6 py-2 rounded font-bold hover:bg-pink-700 transition">
+                            Actualizar URL Base
+                        </button>
+                    </form>
+                </section>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                     {/* Add Anime Form */}

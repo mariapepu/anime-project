@@ -15,9 +15,14 @@ const MyList = () => {
     useEffect(() => {
         const fetchList = async () => {
             if (user?.email) {
-                const querySnapshot = await getDocs(collection(db, 'users', user.email, 'savedShows'));
-                const listData = querySnapshot.docs.map(doc => doc.data());
-                setMyList(listData);
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'users', user.email, 'savedShows'));
+                    const listData = querySnapshot.docs.map(doc => doc.data());
+                    setMyList(listData);
+                } catch (err) {
+                    console.warn("MyList: Error fetching saved shows (check permissions)", err);
+                    setMyList([]);
+                }
             }
         };
         fetchList();

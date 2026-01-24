@@ -4,7 +4,7 @@ import { Search, Bell, User } from 'lucide-react';
 import { UserAuth } from '../context/AuthContext';
 import { useAnime } from '../context/AnimeContext';
 import { db } from '../firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -53,17 +53,19 @@ const Navbar = () => {
     }, []);
 
     useEffect(() => {
-        let unsubscribe;
-        if (user?.email) {
-            unsubscribe = onSnapshot(doc(db, 'users', user.email), (doc) => {
-                if (doc.exists()) {
-                    setUserData(doc.data());
+        const fetchUserData = async () => {
+            if (user?.email) {
+                try {
+                    const docSnap = await getDoc(doc(db, 'users', user.email));
+                    if (docSnap.exists()) {
+                        setUserData(docSnap.data());
+                    }
+                } catch (err) {
+                    console.warn("Navbar: Error fetching user data", err);
                 }
-            });
-        }
-        return () => {
-            if (unsubscribe) unsubscribe();
+            }
         };
+        fetchUserData();
     }, [user]);
 
     const [showSearch, setShowSearch] = useState(false);
