@@ -166,7 +166,10 @@ const TitleDetails = () => {
                                     <select
                                         className="appearance-none bg-[#242424] text-white rounded px-4 py-2 pr-10 text-lg font-bold focus:outline-none cursor-pointer min-w-[160px] hover:bg-[#333] transition-colors"
                                         value={selectedSeason}
-                                        onChange={(e) => setSelectedSeason(parseInt(e.target.value))}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setSelectedSeason(isNaN(val) ? val : parseInt(val));
+                                        }}
                                     >
                                         {anime.seasons.map(s => (
                                             <option key={s.season} value={s.season}>

@@ -37,6 +37,7 @@ const Admin = () => {
 
     const { baseVideoUrl, setBaseVideoUrl } = useAnime();
     const [newBaseUrl, setNewBaseUrl] = useState(baseVideoUrl);
+    const [bulkJson, setBulkJson] = useState('');
 
     // Sync local state when base URL is fetched from context
     useEffect(() => {
@@ -91,10 +92,12 @@ const Admin = () => {
             const animeData = animeSnap.data();
             const seasons = animeData.seasons || [];
 
+            const seasonValue = isNaN(episodeForm.season) ? episodeForm.season : parseInt(episodeForm.season);
+
             // Find or create season
-            let seasonIndex = seasons.findIndex(s => s.season === parseInt(episodeForm.season));
+            let seasonIndex = seasons.findIndex(s => s.season === seasonValue);
             if (seasonIndex === -1) {
-                seasons.push({ season: parseInt(episodeForm.season), episodes: [] });
+                seasons.push({ season: seasonValue, episodes: [] });
                 seasonIndex = seasons.length - 1;
             }
 
@@ -142,6 +145,61 @@ const Admin = () => {
         }
     };
 
+    const handleBulkSubmit = async (e) => {
+        e.preventDefault();
+        setMessage('Procesando carga masiva...');
+        try {
+            const data = JSON.parse(bulkJson);
+            const { animeId, season, episodes } = data;
+
+            if (!animeId || !season || !episodes || !Array.isArray(episodes)) {
+                throw new Error("Formato JSON inválido. Revisa el template.");
+            }
+
+            const animeRef = doc(db, 'animes', animeId.toString());
+            const animeSnap = await getDoc(animeRef);
+
+            if (!animeSnap.exists()) {
+                throw new Error(`No se encontró el anime con ID ${animeId}`);
+            }
+
+            const animeData = animeSnap.data();
+            const seasons = animeData.seasons || [];
+
+            const seasonValue = isNaN(season) ? season : parseInt(season);
+
+            let seasonIndex = seasons.findIndex(s => s.season === seasonValue);
+            if (seasonIndex === -1) {
+                seasons.push({ season: seasonValue, episodes: [] });
+                seasonIndex = seasons.length - 1;
+            }
+
+            // Merge episodes (avoid duplicates by id)
+            const currentEpisodes = seasons[seasonIndex].episodes;
+            episodes.forEach(newEp => {
+                const existingIndex = currentEpisodes.findIndex(e => e.id === newEp.id);
+                if (existingIndex !== -1) {
+                    currentEpisodes[existingIndex] = newEp; // Update if exists
+                } else {
+                    currentEpisodes.push(newEp); // Add if new
+                }
+            });
+
+            // Sort
+            seasons[seasonIndex].episodes.sort((a, b) => a.id - b.id);
+
+            await updateDoc(animeRef, {
+                seasons: seasons,
+                lastEpisodeAt: new Date().toISOString()
+            });
+
+            setMessage(`¡${episodes.length} capítulos procesados con éxito!`);
+            setBulkJson('');
+        } catch (error) {
+            setMessage('Error en bulk: ' + error.message);
+        }
+    };
+
     return (
         <div className="bg-[#141414] min-h-screen text-white">
             <Navbar />
@@ -174,7 +232,7 @@ const Admin = () => {
                     </form>
                 </section>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
                     {/* Add Anime Form */}
                     <section className="bg-[#222] p-6 rounded-lg border border-gray-800">
                         <h2 className="text-xl font-bold mb-6">Añadir Nuevo Anime / Película</h2>
@@ -252,6 +310,23 @@ const Admin = () => {
                         </form>
                     </section>
                 </div>
+
+                {/* Bulk Upload Section */}
+                <section className="bg-[#222] p-6 rounded-lg border border-yellow-500/30 mb-20 shadow-lg">
+                    <h2 className="text-xl font-bold mb-4 text-yellow-500">Carga Masiva de Capítulos (JSON)</h2>
+                    <p className="text-sm text-gray-400 mb-4">Pega aquí el contenido de `bulk_template.json` relleno con tus datos.</p>
+                    <form onSubmit={handleBulkSubmit} className="space-y-4">
+                        <textarea
+                            value={bulkJson}
+                            onChange={(e) => setBulkJson(e.target.value)}
+                            className="w-full bg-[#333] p-4 rounded border border-gray-700 focus:border-yellow-500 outline-none h-64 font-mono text-xs"
+                            placeholder='{"animeId": "1", "season": 1, "episodes": [...] }'
+                        />
+                        <button type="submit" className="bg-yellow-600 text-white px-8 py-3 rounded font-bold hover:bg-yellow-700 transition w-full md:w-auto">
+                            Procesar Carga Masiva
+                        </button>
+                    </form>
+                </section>
             </div>
         </div>
     );

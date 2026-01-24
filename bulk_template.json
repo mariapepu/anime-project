@@ -1,0 +1,18 @@
+{
+    "animeId": "RELLENAR_CON_ID_NUMERICO",
+    "season": 1,
+    "episodes": [
+        {
+            "id": 1,
+            "title": "Nombre del Episodio 1",
+            "video": "/Ruta/En/Cloudflare/o/Drive/1.mp4",
+            "duration": "24m"
+        },
+        {
+            "id": 2,
+            "title": "Nombre del Episodio 2",
+            "video": "https://url-completa-si-prefieres.com/video.mp4",
+            "duration": "24m"
+        }
+    ]
+}
